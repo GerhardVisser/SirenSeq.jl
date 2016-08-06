@@ -59,6 +59,28 @@ playMidi(sq,path="foo",bpm=200)
 This tells `playMidi` to write to *foo.mid* and play at 200 beats per minute (instead of the default 120).  For more detail on `playMidi` or any other exported function in *SirenSeq*, type `?playMidi` in the Julia terminal.
 
 
+## Interrupting Play
+
+Sometimes you will want to stop a midi file from playing.  One problem that can occur when simply killing the *pmidi* is that some note keeps playing indefinitely because the interrupt occurred before a note-off midi event.  To prevent this *SirenSeq* must play a special midi file called *stop.mid* immediately after the interrupt which tells the sequencer to stop all sounds.  To make this more customizable the *stop.mid* should reside in your project working directory so you can replace it with anything you like later.  To generate the default *stop.mid* in your project working directory, run,
+```julia
+makeStopMidi()
+```
+Now you can use the function `stop()` to interrupter play.  Running,
+```julia
+playMidi(R(8,sq))
+```
+will repeat `sq` 8 times.  While it is running stop it using,
+```julia
+stop()
+```
+Since `playMidi` returns a process there is also the option,
+```julia
+p = playMidi(R(8,sq))
+stop(p)
+```
+which is perhaps a more clean way to stop a playback process since the `stop()` asks the operating system to kill all instances of *pmidi* where `stop(p)` targets the specific process.
+
+
 ## Rendering a Note Sequence
 
 Next we are going to render `sq` to a *.pdf* file in traditional music notation.  From the Julia terminal, run,
