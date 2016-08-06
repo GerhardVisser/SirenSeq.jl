@@ -1,5 +1,6 @@
 module GenFluidSF144
 
+## instrument (bank,program) numbers used by the SirenSeq.Inst function
 
 const iGrandPiano		= (0,0)
 const iBrightPiano		= (0,1)

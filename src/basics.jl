@@ -130,6 +130,25 @@ function S(xs...)
 end
 
 
+"""
+	R(v::Int, x::Expi)
+
+Returns `x` repeated `v` times in sequence.
+"""
+function R(v::Int,x::Expi)
+	@assert v > 0
+	x = toExp(x)
+	ln = len(x)
+	t = 0//1
+	zs = Atom[]
+	for i in 1:v
+		seqPush!(zs,x,t)
+		t += ln
+	end
+	Chord(zs)
+end
+
+
 
 
 

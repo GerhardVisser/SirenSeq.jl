@@ -203,6 +203,75 @@ Track tempo event; `bpm` is the beats per minute.
 Tpo(bpm::Int) = Tempo(0//1,bpm)
 
 
+"""
+	Inst(pg::Tuple{Int,Int}, [v::Float64])
+
+Sets instrument to bank `pg[1]` program `pg[2]`.
+If `v` is specified it also sets the volume to `v` which shoud be in the range `[0,1]`.
+Named (bank,program) tuple constants can be found in the `SirenSeq.GenFluidSF144` and `SirenSeq.GenMuseScoreSF144` modules.
+For example, `Instr(SirenSeq.GenMuseScoreSF144.iTubularBells,0.8)` selects the tubular-bells instrument from the general musescore 144 soundfont file and sets its volume to 0.8.
+"""
+Inst(pg::Tuple{Int,Int}) = S(Bank(pg[1]),Prog(pg[2]))
+Inst(pg::Tuple{Int,Int}, v::Float64) = S(Bank(pg[1]),Prog(pg[2]),Vol(v))
+
+
+"""
+	Con(x::Expi, b1::IR, b2::IR)
+
+Contain `x`; this function makes sure that no events happen outside the time interval [`b1`,`b2`].
+Events that cross this interval may be removed or shortened.
+"""
+Con(x::Expi, b1::IR, b2::IR) = ( @assert b2>b1 ; contain(toExp(x),b1//1,b2//1) )
+
+contain(x::Chord, b1::Rational{Int}, b2::Rational{Int}) = chordOp(z->contain(z,b1,b2),x)
+
+contain(x::Atom, b1::Rational{Int}, b2::Rational{Int}) = in(:dur,fieldnames(typeof(x))) ? contain1(x,b1,b2) : contain2(x,b1,b2)
+
+function contain1(x::Atom, b1::Rational{Int}, b2::Rational{Int})
+	dur = x.dur ; ofs = x.ofs
+	t1 = ofs ; t2 = ofs+dur
+	if t1 < b1 ; dt = b1-t1 ; ofs += dt ; dur -= dt ; end
+	if t2 > b2 ; dt = t2-b2 ; dur -= dt ; end
+	if dur <= 0 ; return Chord(Atom[]) ; end
+	y = deepcopy(x) ; y.ofs=ofs ; y.dur=dur
+	y
+end
+
+
+"""
+	Kl(v::Rational{Int},x::Expi)
+
+Klip `x` by `v`.  The duration of all notes in `x` is multiplied by `v`.
+A blank is inserted after each note where its length is `(1-v)` times the duration of the original note.
+`0 < v < 1` must hold.
+"""
+Kl(v::Rational{Int}, x::Expi) = ( @assert 0<v<1 ; klip(v,toExp(x)) )
+
+klip(v::Rational{Int}, x::Note) = ( y = deepcopy(x) ; y.dur*=v ; S(y,B(x.dur*(1-v))) )
+klip(v::Rational{Int}, x::Atom) = x
+klip(v::Rational{Int}, x::Chord) = chordOp(z->klip(v,z),x)
+
+
+"""
+	Spl(v::Int, x::Expi)
+
+Split `x` `v` times.  Replaces each note in `x` by the same note repeated `v` times in the same time interval.
+"""
+Spl(v::Int, x::Expi) = ( @assert 1<v ; splitt(v,toExp(x)) )
+
+splitt(v::Int, x::Note) = ( y = deepcopy(x) ; y.dur/=v ; y.ofs=0//1 ; F(x.ofs,R(v,y)) )
+splitt(v::Int, x::Atom) = x
+splitt(v::Int, x::Chord) = chordOp(z->splitt(v,z),x)
+
+
+"""
+	Da(v1::IR, v2::Float64, x::Expi) = D(v1,A(v2,x))
+
+Dilate `x` by `v1` and accelirate it by `v2`.
+"""
+Da(v1::IR, v2::Float64, x::Expi) = D(v1,A(v2,x))
+
+
 
 
 

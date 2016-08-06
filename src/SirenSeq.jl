@@ -19,8 +19,8 @@ export
 
 ## from basics.jl
 IR, Exp, Expi, Atom,
-C, S, len,
-ftoi14, ftoi7, itof14, itof7,
+C, S, R,
+len, ftoi14, ftoi7, itof14, itof7,
 chordOp, toExp,
 
 ## from shortcuts.jl
@@ -32,6 +32,7 @@ Wh, Aft, Cn7, Cn14,
 Sus0, Sus1,
 SoundsOff, CntrlOff, NotesOff, 
 Mark, Sig, Tpo,
+Inst, Con, Kl, Spl, Da,
 
 ## from exportmidi.jl
 setDefaultBpm, makeMidi

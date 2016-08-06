@@ -29,7 +29,7 @@ Chord:
   Note:   ch1,   ofs = 2 + 0//1,   dur = 1//1,   itv =  3,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
   Note:   ch1,   ofs = 3 + 0//1,   dur = 1//1,   itv =  2,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
 ```
-The top line `Chord:` just means that `sq` is a collection; in this, case 4 Notes.  Let's look at these notes.  `ch1` means that the note will be played on channel 1.  `ofs` represents and *offset*.  `ofs = 2 + 0//1` means that the note starts 2 whole-note lengths after the start of `sq` (at `0`).  `dur` represents duration.  `dur = 1//1` means that the note is held for 1 whole-note.  `itv` represents an interval on some scale; in this case the scale is `sca = SirenSeq.Scales.cMaj` which is the *C Major* scale.  When `itv` is less than `1`, the scale moves an octave down.  When `itv` is greater than `7`, the scale moves an octave up.  `ocv` represents the note octave which is `3` for these notes.  Finally, `vel` represents the note velocity.  Velocity should be in the range `\[0,1\]`, otherwise it will be clipped.
+The top line `Chord:` just means that `sq` is a collection; in this case, 4 Notes.  Let's look at these notes.  `ch1` means that the note will be played on channel 1.  `ofs` represents and *offset*.  `ofs = 2 + 0//1` means that the note starts 2 whole-note lengths after the start of `sq` (at 0).  `dur` represents duration.  `dur = 1//1` means that the note is held for 1 whole-note.  `itv` represents an interval on some scale; in this case the scale is `sca = SirenSeq.Scales.cMaj` which is the *C Major* scale.  When `itv` is less than 1, the scale moves an octave down.  When `itv` is greater than 7, the scale moves an octave up.  `ocv` represents the note octave which is 3 for these notes.  Finally, `vel` represents the note velocity.  Velocity should be in the range `[0,1]`, otherwise it will be clipped.
 
 
 ## Playing a Note Sequence
@@ -52,11 +52,11 @@ tells *SirenSeq* to play all midi files to that port unless otherwise specified.
 ```julia
 playMidi(sq)
 ```
-Notice that it returns the pmidi process playing `sq`.  If you go to your working directory you should see that a file called *temp.mid* was created containing the sequence just played.  By default, `playMidi` always writes to *temp.mid*.  Now try running,
+Notice that it returns the *pmidi* process playing `sq`.  If you go to your working directory you should see that a file called *temp.mid* was created containing the sequence just played.  By default, `playMidi` always writes to *temp.mid*.  Now try running,
 ```julia
 playMidi(sq,path="foo",bpm=200)
 ```
-This tells `playMidi` to write to *foo.mid* and play at `200` beats per minute (instead of the default `120`).  For more detail on `playMidi` or any other exported function in *SirenSeq*, type `?playMidi` in the Julia terminal.
+This tells `playMidi` to write to *foo.mid* and play at 200 beats per minute (instead of the default 120).  For more detail on `playMidi` or any other exported function in *SirenSeq*, type `?playMidi` in the Julia terminal.
 
 
 ## Rendering a Note Sequence
