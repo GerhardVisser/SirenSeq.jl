@@ -34,10 +34,7 @@ SoundsOff, CntrlOff, NotesOff,
 Mark, Sig, Tpo,
 
 ## from exportmidi.jl
-setDefaultBpm, makeMidi,
-
-## from playmidi.jl
-setDefaultPlayPort, playMidi, playMidiQuick
+setDefaultBpm, makeMidi
 
 
 
@@ -47,6 +44,8 @@ include("shortcuts.jl")
 include("display.jl")
 include("exportmidi.jl")
 include("playmidi.jl")
+include("midirender.jl")
+
 
 
 end

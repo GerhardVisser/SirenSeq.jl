@@ -1,3 +1,12 @@
+module Play
+
+
+
+export setDefaultPlayPort, playMidi, playMidiQuick
+
+
+using SirenSeq
+using SirenSeq.defaultBpm
 
 
 ## default ALSA midi port to play to
@@ -21,10 +30,8 @@ It then plays the file on ALSA port `port` (e.g. \"130:0\") using the program pm
 If `x` is not specified it will look for a file called \"temp.mid\" and play that.
 """
 function playMidi(x::Expi; port::AbstractString=defaultPlayPort, path::AbstractString="temp", tpq::Int=96, bpm::Int=defaultBpm)
-	print("parsing expression ... \t")
 	makeMidi(x;path=path,tpq=tpq,bpm=bpm)
 	sleep(0.2)
-	print("done\n")
 	playMidi(port=port,path=path)
 end
 
@@ -48,7 +55,7 @@ end
 
 
 """
-	playQuick(; port=defaultPlayPort, path=\"stop\")
+	playMidiQuick(; port=defaultPlayPort, path=\"stop\")
 
 Plays the file specified by `path` on ALSA port `port` using the program pmidi.
 Do not use this for anything other that muting all sequencers.
@@ -69,6 +76,4 @@ end
 
 
 
-
-
-
+end
