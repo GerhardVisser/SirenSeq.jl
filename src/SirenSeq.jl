@@ -11,7 +11,7 @@ using SirenSeq.Scales
 
 include("constants/GenFluidSF144.jl")
 include("constants/GenMuseScoreSF144.jl")
-include("constants/GmDrums.jl.jl")
+include("constants/GmDrums.jl")
 
 
 ## use Julia commandline ? option for exported function descritions
@@ -34,7 +34,10 @@ SoundsOff, CntrlOff, NotesOff,
 Mark, Sig, Tpo,
 
 ## from exportmidi.jl
-setDefaultBpm, makeMidi
+setDefaultBpm, makeMidi,
+
+## from playmidi.jl
+setDefaultPlayPort, playMidi, playMidiQuick
 
 
 
@@ -43,7 +46,7 @@ include("atoms.jl")
 include("shortcuts.jl")
 include("display.jl")
 include("exportmidi.jl")
-
+include("playmidi.jl")
 
 
 end
