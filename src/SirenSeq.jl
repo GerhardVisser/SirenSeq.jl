@@ -1,5 +1,11 @@
 module SirenSeq
 
-# package code goes here
 
-end # module
+include("midi/Midi.jl")
+
+
+using SirenSeq.Midi
+
+
+
+end
