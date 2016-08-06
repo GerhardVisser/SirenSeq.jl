@@ -28,7 +28,7 @@ noScale
 
 
 function toPitch(ocv::Int, val::Int, scaleDict::Dict{Int,Int}, ofs::Int)
-	ssz = length(scale) ;  @assert  0 < ssz < 12
+	ssz = length(scaleDict) ;  @assert  0 < ssz < 12
 	while val < 1
 		val += ssz
 		ocv -= 1
