@@ -6,4 +6,4 @@ A tool for composing and sequencing music using Julia.  The goal is to remove th
 - the submodule *SirenSeq.Render* requires that [musescore](https://musescore.org/) is installed
 - the submodule *SirenSeq.Play* requires that [pmidi](http://alsa.opensrc.org/Pmidi) is installed
 
-To get started, go to the `src/tutorials` folder and open the `Tutorial.md` file from the github browser.  More tutorials will be added soon.
+To get started, go to the `tutorials` folder and open the `Tutorial*.md` files from the github browser.  More tutorials will be added soon.

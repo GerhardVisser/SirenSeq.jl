@@ -69,7 +69,7 @@ Now you can use the function `stop()` to interrupter play.  Running,
 ```julia
 playMidi(R(8,sq))
 ```
-will repeat `sq` 8 times.  While it is running stop it using,
+will repeat `sq` 8 times.  While it is running, stop it using,
 ```julia
 stop()
 ```
@@ -78,7 +78,7 @@ Since `playMidi` returns a process there is also the option,
 p = playMidi(R(8,sq))
 stop(p)
 ```
-which is perhaps a more clean way to stop a playback process since the `stop()` asks the operating system to kill all instances of *pmidi* where `stop(p)` targets the specific process.
+which is perhaps a more clean way to stop a playback process since `stop()` asks the operating system to kill all instances of *pmidi* where `stop(p)` targets the specific process.
 
 
 ## Rendering a Note Sequence
