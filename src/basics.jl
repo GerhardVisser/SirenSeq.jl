@@ -55,7 +55,11 @@ chordPush!(xs::Vector{Atom}, x::Atom) = push!(xs,x)
 chordPush!(xs::Vector{Atom}, x::Chord) = for z in x.xs ; chordPush!(xs,z) ; end
 
 
-"creates a complex audio expression (Chord) with members of `xs` all played at the same time"
+"""
+	C(xs...)
+
+Creates a non-atomic audio expression (Chord) with members of `xs` all played at the same time.
+"""
 function C(xs...)
 	zs = Atom[]
 	for x::Expi in xs
@@ -65,7 +69,12 @@ function C(xs...)
 end
 
 
-"applies function `op` (Atom)->(Exp) to all members of `x`::Expi"
+"""
+	chordOp(op::Function, x::Expi)
+
+Applies function `op` (Atom)->(Exp) to all members of `x`.
+
+"""
 chordOp(op::Function, x::Int) = chordOp(op,toExp(x))  
 chordOp(op::Function, x::Atom) = ( zs = Atom[] ; chordPush!(zs,op(x)) ; length(zs) == 1 ? zs[1] : Chord(zs) )
 chordOp(op::Function, x::Chord) = ( zs = Atom[] ; for y in x.xs ; chordPush!(zs,op(y)) ; end ; Chord(zs) )
@@ -105,7 +114,11 @@ len(x::Chord) = reduce((z1,z2)->max(z1,len(z2)),0//1,x.xs)
 seqPush!(xs::Vector{Atom}, x::Atom, t::Rational{Int}) = push!(xs,sshift(t,toExp(x)))
 seqPush!(xs::Vector{Atom}, x::Chord, t::Rational{Int}) = for z in x.xs ; seqPush!(xs,z,t) ; end
 
-"creates a complex audio expression (Chord) with members of `xs` all played in sequence"
+"""
+	S(xs...)
+
+Creates a non-atomic audio expression (Chord) with members of `xs` all played in sequence.
+"""
 function S(xs...)
 	zs = Atom[]
 	t = 0//1
