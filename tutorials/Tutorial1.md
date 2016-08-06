@@ -92,8 +92,6 @@ There is a good chance that *musescore* will throw up some error messages and po
 renderMidi(path="foo",name="bar")
 ```
 
-This concludes the first lesson.
-
 
 
 
