@@ -2,7 +2,7 @@ module Play
 
 
 
-export setDefaultPlayPort, playMidi, playMidiQuick
+export setDefaultPlayPort, playMidi, stop, makeStopMidi
 
 
 using SirenSeq
@@ -54,12 +54,7 @@ function playMidi(; port::AbstractString=defaultPlayPort, path::AbstractString="
 end
 
 
-"""
-	playMidiQuick(; port=defaultPlayPort, path=\"stop\")
-
-Plays the file specified by `path` on ALSA port `port` using the program pmidi.
-Do not use this for anything other that muting all sequencers.
-"""
+## used by stop
 function playMidiQuick(; port::AbstractString=defaultPlayPort, path::AbstractString="stop")
 	try
 		run(`pmidi -d 0.1 -p $(port) $(path).mid`)
@@ -72,6 +67,51 @@ function playMidiQuick(; port::AbstractString=defaultPlayPort, path::AbstractStr
 			throw(err)
 		end
 	end
+end
+
+
+"""
+	stop([p]; port=defaultPlayPort, path=\"stop\"
+
+Stops the process `p`, which is assumed to be the one returned by `playMidi`.
+If `p` is not given, it will simply kill all instances of the program pmidi.
+Plays the file \"`path`.mid\" on ALSA port `port` using the program pmidi.
+By default, `path` == \"stop.mid\", which is assumed to be a short midi file that tells a sequencers to be quiet.
+Use the function `makeStopMidi` to generate this file in your project directory.
+"""
+function stop(p; port::AbstractString=defaultPlayPort, path::AbstractString="stop")
+	if process_running(p) ; kill(p) ; end
+	sleep(0.1)
+	playMidiQuick(port=defaultPlayPort,path="stop")
+	sleep(0.1)
+	print("play stopped\n")
+	return
+end
+
+
+function stop()
+	try
+		run(`killall pmidi`)
+	catch err
+	end
+	sleep(0.1)
+	playMidiQuick(port=defaultPlayPort,path="stop")
+	sleep(0.1)
+	print("play stopped\n")
+	return
+end
+
+
+"""
+	makeStopMidi(path::AbstractString=\"stop\")
+
+Writes a midi file called \"`path`.mid\" where `path` defaults to \"stop\".
+The file contains a midi messages to turn all notes off and stop all sounds.
+This function should be run once to make the file in you projec directory so it can be used by the `stop` function.
+"""
+function makeStopMidi(path::AbstractString="stop")
+	x = S(NotesOff(),B(1//32),SoundsOff(),B(1//32))
+	makeMidi(x;path=path,bpm=-1)
 end
 
 
