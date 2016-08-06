@@ -1,7 +1,9 @@
 # SirenSeq
 
-A tool for composing and sequencing music using Julia.  The goal is to remove the need for GUI tools when composing, recording and sequencing music by doing it all using Julia scripts and the SirenSeq module.  At this time only MIDI file composition is implemented.  Later versions will work by using csound for audio recording, playing and manipulation.
+A tool for composing and sequencing music using Julia.  The goal is to remove the need for GUI tools when composing, recording and sequencing music by doing it all using Julia scripts and the SirenSeq module.  At this time only MIDI file composition is implemented.  Later versions will work by using [csound](http://www.csounds.com/) for audio recording, playing and manipulation.
 
-Compatable only with linux.  The submodule SirenSeq.Render requires that musescore is installed.  The submodule SirenSeq.Play requires that pmidi is installed.
+- compatible only with Linux
+- the submodule *SirenSeq.Render* requires that [musescore](https://musescore.org/) is installed
+- the submodule *SirenSeq.Play* requires that [pmidi](http://alsa.opensrc.org/Pmidi) is installed
 
-Tutorials and examples not yet implemented.
+To get started, go to the `src/tutorials` folder and open the `Tutorial.md` file from the github browser.  More tutorials will be added soon.
