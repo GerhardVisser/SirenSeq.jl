@@ -9,6 +9,11 @@ using SirenSeq.Midi
 using SirenSeq.Scales
 
 
+include("constants/GenFluidSF144.jl")
+include("constants/GenMuseScoreSF144.jl")
+include("constants/GmDrums.jl.jl")
+
+
 ## use Julia commandline ? option for exported function descritions
 export
 
