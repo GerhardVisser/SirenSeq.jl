@@ -55,6 +55,99 @@ will repeat the chord `x` 4 times.  This can also be accomplished with,
 sq2 = R(4,x)
 ```
 
+
 ## Modifiers
 
-TODO
+So far we have seen how to construct atoms using `N` and how to combine them using `C`, `S` abd `R`; now we will look at some basic operations that can be used to modify them.  The **accelirate** modifier `A` can be used to modify the velocity of notes.  If you run,
+```julia
+A(0.5,sq1)
+```
+you should see,
+```
+Chord:
+  Note:   ch1,   ofs = 0 + 0//1,   dur = 1//1,   itv =  1,  ocv = 3,  vel = 0.50,  sca = SirenSeq.Scales.cMaj
+  Note:   ch1,   ofs = 1 + 0//1,   dur = 1//1,   itv =  2,  ocv = 3,  vel = 0.50,  sca = SirenSeq.Scales.cMaj
+  Note:   ch1,   ofs = 2 + 0//1,   dur = 1//1,   itv =  3,  ocv = 3,  vel = 0.50,  sca = SirenSeq.Scales.cMaj
+  Note:   ch1,   ofs = 3 + 0//1,   dur = 1//1,   itv =  4,  ocv = 3,  vel = 0.50,  sca = SirenSeq.Scales.cMaj
+```
+The velocities `vel` of all notes have been multiplied by 0.5.  If you run,
+```julia
+A(0.5,A(4.0,7))
+```
+you should see,
+```
+Note:   ch1,   ofs = 0 + 0//1,   dur = 1//1,   itv =  3,  ocv = 3,  vel = 2.00,  sca = SirenSeq.Scales.cMaj
+```
+`A` knows that its second argument should be an `Exp` so it converts `3` to `N(3)`.  The inner `A` changes `vel` to 4  while the outer `A` changes the 4 to 2.  If you play this not the velocity value 2 will be clipped to 1 just before going into the midi file.
+
+To change the duration of a note, the **dilate** modifier `D` can be used.  Running,
+```julia
+D(1//2,7)
+```
+should produce,
+```
+Note:   ch1,   ofs = 0 + 0//1,   dur = 1//2,   itv =  7,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
+```
+Notice that this is the note `N(7)` with its duration multiplied by `1//2` to produce a half-note.  All time durations and time multipliers in *SirenSeq* should be specified as `Int`s or as rationsals of type `Rational{Int}`, never as floating points.  Now run,
+```julia
+D(1//4,sq1)
+```
+and you should see,
+```
+Chord:
+  Note:   ch1,   ofs = 0 + 0//1,   dur = 1//4,   itv =  1,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
+  Note:   ch1,   ofs = 0 + 1//4,   dur = 1//4,   itv =  2,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
+  Note:   ch1,   ofs = 0 + 1//2,   dur = 1//4,   itv =  3,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
+  Note:   ch1,   ofs = 0 + 3//4,   dur = 1//4,   itv =  4,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
+```
+The modified sequence takes up 1 note length instead of 4.  Notice that the offsets `ofs` were also multiplied by `1//4`.  The dilate `D`modifier multiplies both atom offsets and durations by its argumen.  While all `Atom`s have an offset, some will not have duration (like midi control signals).
+
+Next is the **shift** `F` operation.  Shift moves the offsets of all atoms forward by its argument duration.  The command,
+```julia
+z = F(1//2,D(1//2,7))
+```
+should produce,
+```
+Note:   ch1,   ofs = 0 + 1//2,   dur = 1//2,   itv =  7,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
+```
+This note waits for `1//2` note lengths and then plays for a duration of `1//2`.  If `z` is repeated 4 times using,
+```julia
+R(4,z)
+```
+it will produce,
+```
+Chord:
+  Note:   ch1,   ofs = 0 + 1//2,   dur = 1//2,   itv =  7,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
+  Note:   ch1,   ofs = 1 + 1//2,   dur = 1//2,   itv =  7,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
+  Note:   ch1,   ofs = 2 + 1//2,   dur = 1//2,   itv =  7,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
+  Note:   ch1,   ofs = 3 + 1//2,   dur = 1//2,   itv =  7,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
+```
+Use the `renderMidi` command to see what `R(4)` looks like.
+
+The next modifier is **Translate** `T`; it changes the interval value of all notes.  The expression `T(-4,N(1))` is therefore equivalent to `N(-3)` since 1-4 = 3.  The first argument of `T` is always an integer.  Run the following code in the julia terminal,
+```julia
+x = D(1//4,S(1,2,3,4)) ;
+y = S(x,T(3,x),T(-1,x),T(0,x)) ;
+renderMidi(y)
+```
+and look at the *temp.pdf* file in the working directory too see the result.  Notice that all translations remain on the *C-Major* scale.  This is because each note `Atom` has its own scale variable.  To chang the scale of an expression, use the `Sca` modifier.  Now run,
+```julia
+using SirenSeq.Scales
+z = Sca(dMin,y) ;
+renderMidi(z)
+```
+The new sequence `z` is in *D-Minor* with `N(1)` corresponding to middle D.  Notice there are no \# symbols in the new *temp.pdf* file; *musescore* has automatically figured out what key to render `z` in.  There are many scales defined it the *Scales* submodule.  If you use `Scales.noScale` all interval values will be treated as midi pitch values which is usefull for percussion instruments.  For percussion instruments you will not want to use the `T` modifier.  It is possible to define your own scales as long as they contain between 1 and 11 notes (*to be duscussed in a future tutorial*).
+
+Next we are going to use the *Octave* modifier `V`.  By default all notes are constructed in octave 3.  The default value can be changed by running `setDefaultOctave`.  Now run,
+```julia
+z2 = V(2,z) ;
+renderMidi(C(z,z2))
+```
+The new sequence `z2` starts with `N(1)` on octave 2.  The `C(z,z2)` creates an expression where `z` and `z2` are played together on the same channel statring at the same time.
+
+The **Channel** `Cha` modifier changes the channel that an `Atom` is played on.  You can play the two sequences on seperate channels using,
+```julia
+z3 = Cha(2,z2) ;
+renderMidi(C(z,z3))
+```
+Now `z` is on the default channel 1 while `z3` is on channel 2.
