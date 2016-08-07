@@ -40,7 +40,7 @@ function Base.show(io::IO, x::BankSel)
 	print(io,s)	
 	s = @sprintf "ofs = %d + %s, " div(x.ofs,1//1) "$(mod(x.ofs,1//1))" ; s = rpad(s,18)
 	print(io,s)
-	s = @sprintf "bank = %d,  " x.bank
+	s = @sprintf "bank = %d" x.bank
 	print(io,s)
 end
 
@@ -50,7 +50,7 @@ function Base.show(io::IO, x::ProgSel)
 	print(io,s)	
 	s = @sprintf "ofs = %d + %s, " div(x.ofs,1//1) "$(mod(x.ofs,1//1))" ; s = rpad(s,18)
 	print(io,s)
-	s = @sprintf "prog = %d,  " x.prog
+	s = @sprintf "prog = %d" x.prog
 	print(io,s)
 end
 
@@ -60,7 +60,7 @@ function Base.show(io::IO, x::VolSet)
 	print(io,s)	
 	s = @sprintf "ofs = %d + %s, " div(x.ofs,1//1) "$(mod(x.ofs,1//1))" ; s = rpad(s,18)
 	print(io,s)
-	s = @sprintf "vol = %.2f,  " x.vol
+	s = @sprintf "vol = %.2f" x.vol
 	print(io,s)
 end
 
@@ -70,7 +70,7 @@ function Base.show(io::IO, x::PitchWheel)
 	print(io,s)	
 	s = @sprintf "ofs = %d + %s, " div(x.ofs,1//1) "$(mod(x.ofs,1//1))" ; s = rpad(s,18)
 	print(io,s)
-	s = @sprintf "val = %.3f,  " (x.val-2^13)/(2^13)
+	s = @sprintf "val = %.3f" (x.val-2^13)/(2^13)
 	print(io,s)
 end
 
@@ -80,7 +80,7 @@ function Base.show(io::IO, x::ChanAfter)
 	print(io,s)	
 	s = @sprintf "ofs = %d + %s, " div(x.ofs,1//1) "$(mod(x.ofs,1//1))" ; s = rpad(s,18)
 	print(io,s)
-	s = @sprintf "val = %.2f,  " x.val/127
+	s = @sprintf "val = %.2f" x.val/127
 	print(io,s)
 end
 
@@ -92,7 +92,7 @@ function Base.show(io::IO, x::Control7)
 	print(io,s)
 	s = @sprintf "num = %d,  " x.num
 	print(io,s)
-	s = @sprintf "val = %d,  " x.val
+	s = @sprintf "val = %d" x.val
 	print(io,s)
 end
 
@@ -104,7 +104,7 @@ function Base.show(io::IO, x::Control14)
 	print(io,s)
 	s = @sprintf "num = %d,  " x.num
 	print(io,s)
-	s = @sprintf "val = %d,  " x.val
+	s = @sprintf "val = %d" x.val
 	print(io,s)
 end
 
@@ -112,7 +112,7 @@ function Base.show(io::IO, x::Marker)
 	print(io,"Marker:  ")
 	s = @sprintf "ofs = %d + %s, " div(x.ofs,1//1) "$(mod(x.ofs,1//1))" ; s = rpad(s,18)
 	print(io,s)
-	s = @sprintf "name = %s,  " x.name
+	s = @sprintf "name = %s" x.name
 	print(io,s)
 end
 
@@ -126,7 +126,7 @@ function Base.show(io::IO, x::TimeSignature)
 	print(io,s)
 	s = @sprintf "clocks = %d,  " x.clocks
 	print(io,s)
-	s = @sprintf "sub = %d,  " x.sub
+	s = @sprintf "sub = %d" x.sub
 	print(io,s)
 end
 
@@ -134,7 +134,7 @@ function Base.show(io::IO, x::Tempo)
 	print(io,"Tempo-Set:  ")
 	s = @sprintf "ofs = %d + %s, " div(x.ofs,1//1) "$(mod(x.ofs,1//1))" ; s = rpad(s,18)
 	print(io,s)
-	s = @sprintf "bpm = %d,  " x.bpm
+	s = @sprintf "bpm = %d" x.bpm
 	print(io,s)
 end
 

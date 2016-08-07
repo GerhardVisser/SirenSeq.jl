@@ -135,7 +135,7 @@ type Marker <: Atom
 	ofs::Rational{Int}		# offset
 	name::AbstractString	# marker name
 
-	Marker(ofs,name) = ( @assert length(name) > 0 ; atomTest(new(name)) )
+	Marker(ofs,name) = ( @assert length(name) > 0 ; atomTest(new(ofs,name)) )
 end
 
 
