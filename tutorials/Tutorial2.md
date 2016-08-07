@@ -151,3 +151,38 @@ z3 = Cha(2,z2) ;
 renderMidi(C(z,z3))
 ```
 Now `z` is on the default channel 1 while `z3` is on channel 2.
+
+
+## Control Atoms
+
+So far the only `Atom`s shown notes, now we will look at the more common midi control messages.  To select a different instrument, use the `Prog` atom constructor.  The harpsichord program number for the *general musescore soundfont* is 6.  Now run,
+```julia
+z4 = S(Prog(6),z3)
+```
+You should see the sequence described starting with,
+```
+Chord:
+  Program-Select:  ch1,   ofs = 0 + 0//1,   prog = 6
+		.
+		.
+		.
+```
+Run,
+```julia
+renderMidi(C(z,z4))
+```
+and see that musescore has the instrument correctly labeled as *harpsichord* in *temp.pdf*.  If you are using a soundfont file with program 6 as the harpsichord you should hear it when running,
+```julia
+playMidi(C(z,z4))
+```
+A bank select midi event can be created using `Bank(n)` where `n` is the desired bank number.  So to select program 8 on bank 120 you could use,
+```julia
+S(Bank(120),Prog(8))
+```
+To change the volume of a channel use `Vol`, for example,
+```julia
+S(Prog(6),Vol(0.8))
+```
+will select the harpsichord (assuming the synthesizer is already on bank 0) and set its volume to 0.8.
+
+There are more control `Atom`s which will be covered in tutorial (*not yet decided*).
