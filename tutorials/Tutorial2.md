@@ -214,7 +214,7 @@ len(F(2,sq4)) == 3
 Blanks to not silence notes that are played at the same time.  The command `S(1,2,3,B())` and `C(S(1,2,3),B(4))` should produce the same result when rendered to midi.  Most modifiers will produce the same resulting midi output with either option so it is up to you to decide which you prefer.
 
 
-## Terminology Revision
+## Terminology
 
 Music is scripted in *SirenSeq* using **audio expressions**.  Expressions that cannot be decomposed into smaller expressions are called *atoms*.  Non-atomic expressions are called **complex expressions** and the all complex expressions are of the type `Chord`.  Expressions are created using three types of functions **constructors**,  **modifiers** and **composers**.  Together these will be referred to as **expressors**.
 
