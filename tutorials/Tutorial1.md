@@ -1,13 +1,13 @@
-# Lesson 1
+# Lesson 1: Playback and Rendering
 
 
 ## Setup
 
-It is assumed that you are running Linux and know how to setup some synthesizer such as [qsynth](http://apps.linuxaudio.org/apps/all/qsynth).  Make sure you can get some sounds out of it before proceeding.
+It is assumed that you are running Linux and know how to setup some synthesizer such as [qsynth](http://apps.linuxaudio.org/apps/all/qsynth).  Make sure you can get sound out of it before proceeding.
 
-You should also have [musescore]((https://musescore.org/)) installed; which is needed to render *.mid* files as *.pdf* musical notation.  Installing it should be as simple as, `apt-get install musescore`.
+You should also have [musescore]((https://musescore.org/)) installed as the submodule *SirenSeq.Render* uses it.. The It is needed to render *.mid* files as *.pdf* musical notation.  Installing it should be as simple as, `apt-get install musescore`.
 
-You should also have [pmidi](http://alsa.opensrc.org/Pmidi) is installed since the functions in SirenSeq.Play uses it.  Later versions might allow you to specify what program to play midi files with and whether it should use Jack or ALSA for midi control.  For now, it uses ALSA.  You can use [a2jmidi_bridge](http://manpages.ubuntu.com/manpages/wily/man1/a2jmidi_bridge.1.html) to make a bridge from ALSA midi to Jack midi if your synthesizer needs Jack midi inputs.
+You should also have [pmidi](http://alsa.opensrc.org/Pmidi) is installed as the submodule *SirenSeq.Play* uses it.  Later versions might allow you to specify what program to play midi files with and whether it should use Jack or ALSA for midi control.  For now, it uses ALSA.  You can use [a2jmidi_bridge](http://manpages.ubuntu.com/manpages/wily/man1/a2jmidi_bridge.1.html) to make a bridge from ALSA midi to Jack midi if your synthesizer needs Jack midi inputs.
 
 
 
@@ -29,7 +29,7 @@ Chord:
   Note:   ch1,   ofs = 2 + 0//1,   dur = 1//1,   itv =  3,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
   Note:   ch1,   ofs = 3 + 0//1,   dur = 1//1,   itv =  2,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
 ```
-The top line `Chord:` just means that `sq` is a collection; in this case, 4 Notes.  Let's look at these notes.  `ch1` means that the note will be played on channel 1.  `ofs` represents and *offset*.  `ofs = 2 + 0//1` means that the note starts 2 whole-note lengths after the start of `sq` (at 0).  `dur` represents duration.  `dur = 1//1` means that the note is held for 1 whole-note.  `itv` represents an interval on some scale; in this case the scale is `sca = SirenSeq.Scales.cMaj` which is the *C Major* scale.  When `itv` is less than 1, the scale moves an octave down.  When `itv` is greater than 7, the scale moves an octave up.  `ocv` represents the note octave which is 3 for these notes.  Finally, `vel` represents the note velocity.  Velocity should be in the range `[0,1]`, otherwise it will be clipped.
+The top line `Chord:` just means that `sq` is a collection of events; in this case, 4 Notes.  Let's look at these notes.  `ch1` means that the note will be played on channel 1.  `ofs` represents and *offset*.  `ofs = 2 + 0//1` means that the note starts 2 whole-note lengths after the start of `sq` (at 0).  `dur` represents duration.  `dur = 1//1` means that the note is held for 1 whole-note.  `itv` represents an interval on some scale; in this case the scale is `sca = SirenSeq.Scales.cMaj` which is the *C Major* scale.  When `itv` is less than 1, the scale moves an octave down.  When `itv` is greater than 7, the scale moves an octave up.  `ocv` represents the note octave which is 3 for these notes.  Finally, `vel` represents the note velocity.  Velocity should be in the range `[0,1]`, otherwise it will be clipped.  Clipping happens when the midi file is written but not when the object is created.
 
 
 ## Playing a Note Sequence
@@ -52,16 +52,16 @@ tells *SirenSeq* to play all midi files to that port unless otherwise specified.
 ```julia
 playMidi(sq)
 ```
-Notice that it returns the *pmidi* process playing `sq`.  If you go to your working directory you should see that a file called *temp.mid* was created containing the sequence just played.  By default, `playMidi` always writes to *temp.mid*.  Now try running,
+Notice that it returns the *pmidi* process playing `sq`.  If you go to your working directory you should see that a file called *temp.mid* was created containing the sequence just played.  By default, `playMidi` always writes to *temp.mid* before playback.  Now run,
 ```julia
 playMidi(sq,path="foo",bpm=200)
 ```
-This tells `playMidi` to write to *foo.mid* and play at 200 beats per minute (instead of the default 120).  For more detail on `playMidi` or any other exported function in *SirenSeq*, type `?playMidi` in the Julia terminal.
+This tells `playMidi` to write to *foo.mid* and play at 200 beats per minute (instead of the default 120).  For more detail on `playMidi` or any other exported function of *SirenSeq*, type `?playMidi` in the Julia terminal.
 
 
 ## Interrupting Play
 
-Sometimes you will want to stop a midi file from playing.  One problem that can occur when simply killing the *pmidi* is that some note keeps playing indefinitely because the interrupt occurred before a note-off midi event.  To prevent this *SirenSeq* must play a special midi file called *stop.mid* immediately after the interrupt which tells the sequencer to stop all sounds.  To make this more customizable the *stop.mid* should reside in your project working directory so you can replace it with anything you like later.  To generate the default *stop.mid* in your project working directory, run,
+Sometimes you will want to stop interrupt playback.  One problem that can occur when simply killing the *pmidi* process is that some note keeps playing indefinitely because the interrupt occurred before a note-off midi event.  To prevent this *SirenSeq* must play a special midi file called *stop.mid* immediately after the interrupt which tells the sequencer to stop all sounds.  To make this more customizable the *stop.mid* should reside in your project working directory so you can replace it with anything you like later.  To generate the default *stop.mid* in your project working directory, run,
 ```julia
 makeStopMidi()
 ```
@@ -91,6 +91,7 @@ There is a good chance that *musescore* will throw up some error messages and po
 ```julia
 renderMidi(path="foo",name="bar")
 ```
+Both `path` and `name` default to `"temp"`.
 
 
 

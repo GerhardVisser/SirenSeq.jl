@@ -32,7 +32,8 @@ Wh, Aft, Cn7, Cn14,
 Sus0, Sus1,
 SoundsOff, CntrlOff, NotesOff, 
 Mark, Sig, Tpo,
-Inst, Con, Kl, Spl, Da,
+Inst, Da,
+Con, Kl, Spl,
 
 ## from exportmidi.jl
 setDefaultBpm, makeMidi
