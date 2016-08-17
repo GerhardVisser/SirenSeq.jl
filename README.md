@@ -10,5 +10,6 @@ Use these links to get started,
 
  - [Tutorial1](https://github.com/GerhardVisser/SirenSeq.jl/blob/master/tutorials/Tutorial1.md)
  - [Tutorial2](https://github.com/GerhardVisser/SirenSeq.jl/blob/master/tutorials/Tutorial2.md)
+ - [Tutorial3](https://github.com/GerhardVisser/SirenSeq.jl/blob/master/tutorials/Tutorial3.md)
 
 More tutorials will be added soon.
