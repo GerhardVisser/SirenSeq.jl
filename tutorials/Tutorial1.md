@@ -1,4 +1,4 @@
-# Lesson 1: Playback and Rendering
+# Lesson 1:  Playback and Rendering
 
 
 ## Setup

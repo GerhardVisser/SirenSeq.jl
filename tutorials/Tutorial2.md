@@ -1,4 +1,4 @@
-# Lesson 2: Audio Expressions
+# Lesson 2:  Audio Expressions
 
 
 ## Expressions
