@@ -136,7 +136,7 @@ using SirenSeq.Scales
 z = Sca(dMin,y) ;
 renderMidi(z)
 ```
-The new sequence `z` is in *D-Minor* with `N(1)` corresponding to middle D.  Notice there are no \# symbols in the new *temp.pdf* file; *musescore* has automatically figured out what key to render `z` in (unless you have an older version installed).  There are many scales defined in the *SirenSeq.Scales* submodule.  If you use `Scales.noScale` all interval values will be treated as raw midi pitch values; which is useful for percussion instruments.  For percussion instruments you will not want to use the `T` modifier.  It is possible to define your own scales provided they contain between 1 and 11 notes (*to be discussed in a future tutorial*).
+The new sequence `z` is in *D-Minor* with `N(1)` corresponding to middle D.  Notice there are no \# symbols in the new *temp.pdf* file; *musescore* has automatically figured out what key to render `z` in (unless you have an older version installed).  There are many scales defined in the *SirenSeq.Scales* submodule.  If you use `Scales.noScale` all interval values will be treated as raw midi pitch values; which is useful for percussion instruments.  For percussion instruments you will not want to use the `T` modifier.  It is possible to define your own scales provided they contain between 1 and 11 notes (*to be discussed in a future tutorial TODO*).
 
 Next we are going to use the **octave** modifier `V`.  By default all notes are constructed in octave 3.  The default value can be changed by running `setDefaultOctave`.  Now run,
 ```julia
@@ -185,4 +185,79 @@ S(Prog(6),Vol(0.8))
 ```
 will select the harpsichord (assuming the synthesizer is already on bank 0) on channel 1 and set its volume to 0.8.
 
-There are more control `Atom`s which will be covered in tutorial (*not yet decided*).
+There are more control `Atom`s which will be covered in tutorial (*TODO*).
+
+
+## Blanks
+
+A **blank** is an atom similar to a *rest* in musical notation.  Blanks are used to to create buffers between notes.  To make a blank, use the `B` constructor.  Here is an example,
+```julia
+B(1//2)
+```
+which should produce,
+```
+Blank:  ch1,   ofs = 0 + 0//1,   dur = 1//2,
+```
+Using `B()` will produce a blank of duration `1//1`.
+
+Imagine that you want to repeat the sequence `sq3 = D(1//4,S(1,2,3))` four times but with a quarter-note rest at the end of each repetition.  Using `R(4,sq3)` or `S(sq3,sq3,sq3,sq3)` will produce a sequence of duration `4*3//4` with no rests in between.  You can use a blank to create a buffer at the end of the sequence.  Now run,
+```julia
+sq3 = D(1//4,S(1,2,3))
+sq4 = D(1//4,S(1,2,3,B()))
+```
+The function `len` returns the length of a sequence.  The following inequalities should hold true,
+```julia
+len(sq3) == 3//4
+len(sq4) == 1//1
+len(F(2,sq4)) == 3
+```
+Blanks to not silence notes that are played at the same time.  The command `S(1,2,3,B())` and `C(S(1,2,3),B(4))` should produce the same result when rendered to midi.  Most modifiers will produce the same resulting midi output with either option so it is up to you to decide which you prefer.
+
+
+## Terminology Revision
+
+Music is scripted in *SirenSeq* using **audio expressions**.  Expressions that cannot be decomposed into smaller expressions are called *atoms*.  Non-atomic expressions are called **complex expressions** and the all complex expressions are of the type `Chord`.  Expressions are created using three types of functions **constructors**,  **modifiers** and **composers**.  Together these will be referred to as **expressors**.
+
+### Constructors
+
+Constructors are those functions that return an expression without taking any expressions as input.  Examples include,
+
+ - `N`, a note
+ - `B`, a blank
+ - `Prog`, program-select
+ - `Bank`, bank-select
+ - `Vol`, set-volume
+
+These five are all belong to a single channel (1 by default) but there are others like midi system messages which do not.  These examples are all **atomic constructors** because they all return a single atom.  Constructors which return complex expressions (containing more than one atom) are called **complex constructors**.  Some standard complex constructors will be presented in (*TODO: future tutorial*) but it is intended that the user relies more on defining their own shortcuts.
+
+
+### Modifiers
+
+Modifiers take an expression as input and return some modified version of it.  Examples include,
+
+ - `A`, accelerate: multiply all note velocities by a argument
+ - `D`, dilate: multiply all atom durations and offsets by argument
+ - `F`, shift: increase all atom offsets by argument
+ - `T`, translate: move all note intervals up their scale by argument
+ - `V`, octave: set all note octave values to argument
+
+These are all examples of **basic-modifiers**, modifiers which are applied directly to all atoms.  This means that if `M1` is a basic-modifiers then the following will be true,
+```julia
+M1(args,C(x1,x2,...,xN)) == C(M1(args,x1),M1(args,x1),M1(args,x2),...,M1(args,xN))
+M1(args,S(x1,x2,...,xN)) == S(M1(args,x1),M1(args,x1),M1(args,x2),...,M1(args,xN))
+```
+where `args` represents the non-expression arguments of `M1` while `x1` through to `xN` are expressions.  Modifiers for which these equalities do not hold are called **complex-modifiers** and are discussed in (*TODO: future tutorial*).
+
+
+### Composers
+
+Composers take multiple expressions as arguments and combines them is some way.  Examples include,
+
+ - `C`, chord: play arguments expressions at the same time
+ - `S`, sequence: play arguments expressions in sequence
+ - `R`, repeat: repeat arguments expressions a specified number of times
+
+
+### Expressor Naming Convention
+
+The convention in Julia is that functions be lower-case while types are upper-case.  For expressors, *SirenSeq* breaks this convention by making all "expressors" upper-case.  The reason is that expressors are meant to be used to script music and so must be short (preferably between 1 and 3 characters long, depending on how often they will be used).  Expressions must easy to read and write compactly.  Since lower-case single letter symbols tend to be used by programmers for short-term variables, using them for expressors would lead to too much confusion.
