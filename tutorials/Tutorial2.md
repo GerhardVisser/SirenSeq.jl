@@ -1,15 +1,11 @@
 # Lesson 2:  Audio Expressions
 
 
-## Expressions
+## Audio Expressions
 
-In *SirenSeq* you compose audio by defining **audio expressions**.  The top audio expressions type is,
+In *SirenSeq* you compose audio by defining **audio expressions**.  There are two types of audio expressions, *complex* and *atomic*.  **Atomic audio expressions** are those that cannot be broken down into simpler expressions.  All atomic expressions belong to the type,
 ```julia
-abstract Exp
-```
-All implementations of `Exp` are immutable so you cannot alter them once created.  **Atomic audio expressions** are those that cannot be broken down into simpler expressions.  All atomic expressions belong to the type,
-```julia
-abstract Atom <: Exp
+abstract Atom
 ```
 Atoms may correspond to multiple midi messages (or to recorded audio in future versions), they are atomic in that, as expressions in the siren language, they cannot be broken down further.  The way that an atom is turned into midi is only determined when the midi file is finally written; not during definition of expressions.
 
@@ -19,20 +15,31 @@ IR = Union{Int,Rational{Int}}
 ```
 If you run `N(7)` you should see,
 ```
-Note:   ch1,   ofs = 0 + 0//1,   dur = 1//1,   itv =  7,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
+Note:   ch1,   ofs =  0 + 0//1,  dur = 1//1,   itv =  7,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
 ```
-The meaning of these values was described in the previous lesson ([Tutorial1](https://github.com/GerhardVisser/SirenSeq.jl/blob/master/tutorials/Tutorial1.md)).  Try running `N(-1,5//3)`, `N(4,0.7)` and `N(4,1//3,0.7)` to see how the produced notes descriptions are affected.
+The meaning of these values was described in the previous lesson ([Tutorial1](https://github.com/GerhardVisser/SirenSeq.jl/blob/master/tutorials/Tutorial1.md)).
 
-Compound expressions can be made by combining atomic expressions using the **chord** `C` composer.  If you run,
+There is only one **complex audio expression** type,
+```julia
+immutable Exp
+	dur::Rational{Int}	# duration
+	as::Vector{Atom}	# order not important, atoms contain thier own offset values
+end
+```
+`dur` is the duration in whole-note lengths of the expression.  `as` is a list of the atoms that make up the expression.
+
+
+
+## Composers
+
+Complex expressions can be made by combining atomic expressions using **composers**.
+
+The first composer we will look at is the **chord** `C` composer.  If you run,
 ```julia
 x = C(N(1),N(5),N(8))
 renderMidi(x)
 ```
-and open *temp.pdf* you should see that `x` is a chord made up of 3 notes.  `C` takes a list of expressions (atomic or complex) as argument. For functions which take expressions as arguments, a special type called `Expi` is defined,
-```julia
-Expi = Union{Int,Exp}
-```
-`C` takes a list of type `Expi` as argument.  If it encounters an `Int` it will turn it into a `Note`.  For example, `5` will be turned into `N(5)`; thus, our chord could be written more concisely as,
+and open *temp.pdf* you should see that `x` is a chord made up of 3 notes.  `C` takes a list of expressions (atomic or complex) as argument.  If one of `C`'s arguments is not an `Atom` or `Exp` it will try to convert it using `Base.convert`.  Arguments of type `Int` will automatically be converted to notes.  For example, `5` will be turned into `N(5)`; thus, our chord could be written more concisely as,
 ```julia
 x = C(1,5,8)
 ```
@@ -40,17 +47,18 @@ Running,
 ```julia
 typeof(x)
 ```
-should return type `SirenSeq.Chord`.  This `Chord` type is the only non-atomic implementation of `Exp`.  *SirenSeq* sees all compositions of events simply as elaborate chords.  Lets look at how this applies to the **sequence** `S` cpmposer seen in lesson (([Tutorial1](https://github.com/GerhardVisser/SirenSeq.jl/blob/master/tutorials/Tutorial1.md)).  Run,
+
+Next we will look at the **sequence** `S` composer (first seen in lesson [Tutorial1](https://github.com/GerhardVisser/SirenSeq.jl/blob/master/tutorials/Tutorial1.md)).  Run,
 ```julia
 sq1 = S(1,2,3,2)
 ```
-Note this is short for `S(N(1),N(2),N(3),N(2))` as `S` also takes a list of type `Expi` as argument.  The composer `S` simply replaces each note with a copy of itself with the offset (`ofs`) increased by the time at which the previous note ends, and then "chords" them together as `C` does.
+Note, this is short for `S(N(1),N(2),N(3),N(2))` as `S` also automatically converts its arguments to expressions.  The composer `S` simply replaces each note with a copy of itself with the offset (`ofs`) increased by the time at which the previous note ends, and then "chords" them together as `C` does.  It also sets the total duration of the produced complex expression to the sum of the argument durations.
 
-The functions `S` and `C` can take any audio expressions as arguments. For example,
+The functions `S` and `C` can take any audio expressions (or types for which a `Base.convert` method exists) as arguments. For example,
 ```julia
 sq2 = S(x,x,x,x)
 ```
-will repeat the chord `x` (which you constructed earlier in this tutorial) 4 times.  This can also be accomplished with,
+will repeat the chord `x` (which you constructed earlier in this tutorial) 4 times.  This can also be accomplished using the **repeat** `R` composer,
 ```julia
 sq2 = R(4,x)
 ```
@@ -64,21 +72,24 @@ A(0.5,sq1)
 ```
 you should see,
 ```
-Chord:
-  Note:   ch1,   ofs = 0 + 0//1,   dur = 1//1,   itv =  1,  ocv = 3,  vel = 0.50,  sca = SirenSeq.Scales.cMaj
-  Note:   ch1,   ofs = 1 + 0//1,   dur = 1//1,   itv =  2,  ocv = 3,  vel = 0.50,  sca = SirenSeq.Scales.cMaj
-  Note:   ch1,   ofs = 2 + 0//1,   dur = 1//1,   itv =  3,  ocv = 3,  vel = 0.50,  sca = SirenSeq.Scales.cMaj
-  Note:   ch1,   ofs = 3 + 0//1,   dur = 1//1,   itv =  4,  ocv = 3,  vel = 0.50,  sca = SirenSeq.Scales.cMaj
+Exp:    dur = 4//1
+  Note:   ch1,   ofs =  0 + 0//1,  dur = 1//1,   itv =  1,  ocv = 3,  vel = 0.50,  sca = SirenSeq.Scales.cMaj
+  Note:   ch1,   ofs =  1 + 0//1,  dur = 1//1,   itv =  2,  ocv = 3,  vel = 0.50,  sca = SirenSeq.Scales.cMaj
+  Note:   ch1,   ofs =  2 + 0//1,  dur = 1//1,   itv =  3,  ocv = 3,  vel = 0.50,  sca = SirenSeq.Scales.cMaj
+  Note:   ch1,   ofs =  3 + 0//1,  dur = 1//1,   itv =  2,  ocv = 3,  vel = 0.50,  sca = SirenSeq.Scales.cMaj
 ```
-The velocities `vel` of all notes have been multiplied by 0.5.  Since all audio expressions in *Siren* are immutable, the modifier `A` did not change `sq1`, it returned a modified copy of it.  If you run,
+The velocities `vel` of all notes have been multiplied by 0.5.  The modifier `A` did not change `sq1`, it returned a modified copy of it.  None of the exported *SirenSeq* functions that take audio expressions (`Atom` or `Exp`) as arguments will modify those arguments.
+
+If you run,
 ```julia
 A(0.5,A(4.0,7))
 ```
 you should see,
 ```
-Note:   ch1,   ofs = 0 + 0//1,   dur = 1//1,   itv =  3,  ocv = 3,  vel = 2.00,  sca = SirenSeq.Scales.cMaj
+Note:   ch1,   ofs =  0 + 0//1,  dur = 1//1,   itv =  7,  ocv = 3,  vel = 2.00,  sca = SirenSeq.Scales.cMaj
 ```
-`A` knows that its second argument should be an `Exp` so it converts `7` to `N(7)`.  The inner `A` changes `vel` to `4.0`  while the outer `A` changes the `4.0` to `2.0`.  If you play or render this note, the velocity value `2.0` will be clipped to `1.0` just before going into the midi file.
+`A` knows that its second argument should be an audio expression so it converts `7` to `N(7)`.  Most exported *SirenSeq* functions that take audio expressions (`Atom` or `Exp`) as arguments will have this property; using the `Base.convert` function to convert to `Atom` or `Exp`.  The inner `A` changes `vel` to `4.0`  while the outer `A` changes the `4.0` to `2.0`.  If you play or render this note, the velocity value `2.0` will be clipped to `1.0` just before going into the midi file.
+
 
 To change the duration of a note (or any atom with a non-zero duration), the **dilate** modifier `D` can be used.  Running,
 ```julia
@@ -86,7 +97,7 @@ D(1//2,7)
 ```
 should produce,
 ```
-Note:   ch1,   ofs = 0 + 0//1,   dur = 1//2,   itv =  7,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
+Note:   ch1,   ofs =  0 + 0//1,  dur = 1//2,   itv =  7,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
 ```
 Notice that this is the note `N(7)` with its duration multiplied by `1//2` to produce a half-note.  All time durations and time multipliers in *SirenSeq* should be specified as `Int`s or as rationals of type `Rational{Int}`, never as floating points.  Now run,
 ```julia
@@ -94,13 +105,14 @@ D(1//4,sq1)
 ```
 and you should see,
 ```
-Chord:
-  Note:   ch1,   ofs = 0 + 0//1,   dur = 1//4,   itv =  1,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
-  Note:   ch1,   ofs = 0 + 1//4,   dur = 1//4,   itv =  2,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
-  Note:   ch1,   ofs = 0 + 1//2,   dur = 1//4,   itv =  3,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
-  Note:   ch1,   ofs = 0 + 3//4,   dur = 1//4,   itv =  4,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
+Exp:    dur = 1//1
+  Note:   ch1,   ofs =  0 + 0//1,  dur = 1//4,   itv =  1,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
+  Note:   ch1,   ofs =  0 + 1//4,  dur = 1//4,   itv =  2,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
+  Note:   ch1,   ofs =  0 + 1//2,  dur = 1//4,   itv =  3,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
+  Note:   ch1,   ofs =  0 + 3//4,  dur = 1//4,   itv =  2,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
 ```
-The modified sequence takes up 1 note length instead of 4.  Notice that the offsets `ofs` were also multiplied by `1//4`.  The dilate `D`modifier multiplies both atom offsets and durations by its argument.  While all `Atom`s have an offset, some will not have a duration (e.g. midi control signals).
+The modified sequence takes up 1 note length instead of 4.  Notice that the offsets `ofs` were also multiplied by `1//4`.  The dilate `D` modifier multiplies both atom offsets and durations by its argument.  While all `Atom`s have an offset, some will not have a duration (e.g. midi control signals).
+
 
 Next is the **shift** `F` operation.  Shift moves the offsets of all atoms forward by its argument duration.  The command,
 ```julia
@@ -108,7 +120,7 @@ z = F(1//2,D(1//2,7))
 ```
 should produce,
 ```
-Note:   ch1,   ofs = 0 + 1//2,   dur = 1//2,   itv =  7,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
+Note:   ch1,   ofs =  0 + 1//2,  dur = 1//2,   itv =  7,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
 ```
 This note waits for `1//2` note lengths and then plays for a duration of `1//2`.  If `z` is repeated 4 times using,
 ```julia
@@ -116,13 +128,14 @@ R(4,z)
 ```
 it will produce,
 ```
-Chord:
-  Note:   ch1,   ofs = 0 + 1//2,   dur = 1//2,   itv =  7,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
-  Note:   ch1,   ofs = 1 + 1//2,   dur = 1//2,   itv =  7,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
-  Note:   ch1,   ofs = 2 + 1//2,   dur = 1//2,   itv =  7,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
-  Note:   ch1,   ofs = 3 + 1//2,   dur = 1//2,   itv =  7,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
+Exp:    dur = 2//1
+  Note:   ch1,   ofs =  0 + 1//2,  dur = 1//2,   itv =  7,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
+  Note:   ch1,   ofs =  1 + 0//1,  dur = 1//2,   itv =  7,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
+  Note:   ch1,   ofs =  1 + 1//2,  dur = 1//2,   itv =  7,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
+  Note:   ch1,   ofs =  2 + 0//1,  dur = 1//2,   itv =  7,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
 ```
-Use the `renderMidi` command to see what `R(4)` looks like.
+Use the `renderMidi` command to see what `R(4)` looks like.  Notice here that the first note begins playing one half-note duration after the start of the experssion while the last note ends one half half-note duration after the expression ends `dur = 2//1`.  This behaviour may seem odd at first but using shift `F` to create small offsets can be usefull (*to be discussed in a future tutorial TODO*).  For now, we will avoid using `F`.
+
 
 The next modifier is **translate** `T`; it changes the interval value of all notes.  The expression `T(-4,N(1))` is therefore equivalent to `N(-3)` since 1-4 = 3.  The first argument of `T` is always an integer.  Run the following code in the julia terminal,
 ```julia
@@ -136,7 +149,8 @@ using SirenSeq.Scales
 z = Sca(dMin,y) ;
 renderMidi(z)
 ```
-The new sequence `z` is in *D-Minor* with `N(1)` corresponding to middle D.  Notice there are no \# symbols in the new *temp.pdf* file; *musescore* has automatically figured out what key to render `z` in (unless you have an older version installed).  There are many scales defined in the *SirenSeq.Scales* submodule.  If you use `Scales.noScale` all interval values will be treated as raw midi pitch values; which is useful for percussion instruments.  For percussion instruments you will not want to use the `T` modifier.  It is possible to define your own scales provided they contain between 1 and 11 notes (*to be discussed in a future tutorial TODO*).
+The new sequence `z` is in *D-Minor* with `N(1)` corresponding to middle D.  Notice that there are no \# symbols in the new *temp.pdf* file; *musescore* has automatically figured out what key to render `z` in (unless you have an older version installed).  There are many scales defined in the *SirenSeq.Scales* submodule.  If you use `Scales.noScale`, all interval values will be treated as raw midi pitch values; which is useful for percussion instruments.  For percussion instruments you will not want to use the `T` modifier.  It is possible to define your own scales, provided they contain between 1 and 11 notes (*to be discussed in a future tutorial TODO*).
+
 
 Next we are going to use the **octave** modifier `V`.  By default all notes are constructed in octave 3.  The default value can be changed by running `setDefaultOctave`.  Now run,
 ```julia
@@ -144,6 +158,7 @@ z2 = V(2,z) ;
 renderMidi(C(z,z2))
 ```
 The new sequence `z2` starts with `N(1)` on octave 2.  The `C(z,z2)` creates an expression where `z` and `z2` are played together on the same channel starting at the same time.
+
 
 The **channel** `Cha` modifier changes the channel that an `Atom` is played on.  You can play the two sequences on separate channels using,
 ```julia
@@ -153,16 +168,20 @@ renderMidi(C(z,z3))
 Now `z` is on the default channel 1 while `z3` is on channel 2.
 
 
+
 ## Control Atoms
 
-So far, the only `Atom` shown was `Note`.  Now we will look at some atoms corresponding to the most frequently used midi control messages.  To select a different instrument, use the `Prog` constructor.  The harpsichord program number for the *general musescore soundfont* is 6.  Now run,
+So far, the only `Atom` shown was `Note`.  Now we will look at some atoms corresponding to the most frequently used midi control messages.
+
+
+To select a different instrument, use the `Prog` constructor.  The harpsichord program number for the *general musescore soundfont* is 6.  Now run,
 ```julia
 z4 = S(Cha(2,Prog(6)),z3)
 ```
 You should see the sequence described starting with,
 ```
 Chord:
-  Program-Select:  ch2,   ofs = 0 + 0//1,   prog = 6
+  Program-Select:  ch2,   ofs =  0 + 0//1,  prog = 6
 		.
 		.
 		.
@@ -175,48 +194,58 @@ and see that musescore has the instrument correctly labeled as *harpsichord* in 
 ```julia
 playMidi(C(z,z4))
 ```
-A bank select midi event can be created using `Bank(n)` where `n` is the desired bank number.  So to select program 8 on bank 120 for channel 2 you could use,
+
+
+A bank select midi event can be created using `Bank(n)` where `n` is the desired bank number.  To select program 8 on bank 120 for channel 2 you could use,
 ```julia
 Cha(2,S(Bank(120),Prog(8)))
 ```
+
+
 To change the volume of a channel use `Vol`, for example,
 ```julia
 S(Prog(6),Vol(0.8))
 ```
 will select the harpsichord (assuming the synthesizer is already on bank 0) on channel 1 and set its volume to 0.8.
 
+
 There are more control `Atom`s which will be covered in tutorial (*TODO*).
+
 
 
 ## Blanks
 
-A **blank** is an atom similar to a *rest* in musical notation.  Blanks are used to to create buffers between notes.  To make a blank, use the `B` constructor.  Here is an example,
+A **blank** is an expression similar to a *rest* in musical notation.  Blanks are used to to create buffers between notes.  To make a blank, use the `B` constructor.  Here is an example,
 ```julia
 B(1//2)
 ```
 which should produce,
 ```
-Blank:  ch1,   ofs = 0 + 0//1,   dur = 1//2,
+Exp:    dur = 1//2
 ```
-Using `B()` will produce a blank of duration `1//1`.
+This expression simply has a duration.  Using `B()` will produce a blank of duration `1//1`.
 
 Imagine that you want to repeat the sequence `sq3 = D(1//4,S(1,2,3))` four times but with a quarter-note rest at the end of each repetition.  Using `R(4,sq3)` or `S(sq3,sq3,sq3,sq3)` will produce a sequence of duration `4*3//4` with no rests in between.  You can use a blank to create a buffer at the end of the sequence.  Now run,
 ```julia
 sq3 = D(1//4,S(1,2,3))
 sq4 = D(1//4,S(1,2,3,B()))
 ```
-The function `len` returns the length of a sequence.  The following inequalities should hold true,
+The field `dur` records duration of an expression.  The following inequalities should hold true,
 ```julia
-len(sq3) == 3//4
-len(sq4) == 1//1
-len(F(2,sq4)) == 3
+sq3.dur == 3//4
+sq4.dur == 1//1
+R(4,sq3).dur == 3//1
+R(4,sq4).dur == 4//1
 ```
-Blanks to not silence notes that are played at the same time.  The command `S(1,2,3,B())` and `C(S(1,2,3),B(4))` should produce the same result when rendered to midi.  Most modifiers will produce the same resulting midi output with either option so it is up to you to decide which you prefer.
+
+Blanks do not silence notes that are played at the same time.  The commands `S(1,2,3,B())` and `C(S(1,2,3),B(4))` should produce the same result.
+
 
 
 ## Terminology
 
-Music is scripted in *SirenSeq* using **audio expressions**.  Expressions that cannot be decomposed into smaller expressions are called *atoms*.  Non-atomic expressions are called **complex expressions** and the all complex expressions are of the type `Chord`.  Expressions are created using three types of functions **constructors**,  **modifiers** and **composers**.  Together these will be referred to as **expressors**.
+Music is scripted in *SirenSeq* using **audio expressions**.  Expressions that cannot be decomposed into smaller expressions are called *atoms*.  Non-atomic expressions are called **complex expressions** and the all complex expressions are of the type `Exp`.  Blanks are also of type `Exp` even though they may be thought of as atomic.  Expressions are created using three types of functions, **constructors**,  **modifiers** and **composers**.  Together these will be referred to as **expressors**.
+
 
 ### Constructors
 
@@ -228,7 +257,7 @@ Constructors are those functions that return an expression without taking any ex
  - `Bank`, bank-select
  - `Vol`, set-volume
 
-These five are all belong to a single channel (1 by default) but there are others like midi system messages which do not.  These examples are all **atomic constructors** because they all return a single atom.  Constructors which return complex expressions (containing more than one atom) are called **complex constructors**.  Some standard complex constructors will be presented in (*TODO: future tutorial*) but it is intended that the user relies more on defining their own shortcuts.
+These five are all belong to a single channel (1 by default) but there are others like midi system messages which do not.  These examples are all **atomic constructors** because they all return a single atom (except `B`).  Constructors which return complex expressions (containing more than one atom or a blank) are called **complex constructors**.  Some standard complex constructors will be presented in (*TODO: future tutorial*) but it is intended that the user relies more on defining their own shortcuts.
 
 
 ### Modifiers
@@ -241,12 +270,12 @@ Modifiers take an expression as input and return some modified version of it.  E
  - `T`, translate: move all note intervals up their scale by argument
  - `V`, octave: set all note octave values to argument
 
-These are all examples of **basic-modifiers**, modifiers which are applied directly to all atoms.  This means that if `M1` is a basic-modifiers then the following will be true,
+These are all examples of **basic-modifiers**, modifiers which are applied directly to all atoms.  If `M1` is a basic-modifier then the following will be true,
 ```julia
 M1(args,C(x1,x2,...,xN)) == C(M1(args,x1),M1(args,x1),M1(args,x2),...,M1(args,xN))
 M1(args,S(x1,x2,...,xN)) == S(M1(args,x1),M1(args,x1),M1(args,x2),...,M1(args,xN))
 ```
-where `args` represents the non-expression arguments of `M1` while `x1` through to `xN` are expressions.  Modifiers for which these equalities do not hold are called **complex-modifiers** and are discussed in (*TODO: future tutorial*).
+where `args` represents the non-expression arguments of `M1` while `x1` through to `xN` are any expressions.  Modifiers for which these equalities do not hold are called **complex-modifiers** and are discussed in (*TODO: future tutorial*).
 
 
 ### Composers
@@ -260,4 +289,10 @@ Composers take multiple expressions as arguments and combines them is some way. 
 
 ### Expressor Naming Convention
 
-The convention in Julia is that functions be lower-case while types are upper-case.  For expressors, *SirenSeq* breaks this convention by making all "expressors" upper-case.  The reason is that expressors are meant to be used to script music and so must be short (preferably between 1 and 3 characters long, depending on how often they will be used).  Expressions must easy to read and write compactly.  Since lower-case single letter symbols tend to be used by programmers for short-term variables, using them for expressors would lead to too much confusion.
+The convention in Julia is that functions be lower-case while types are upper-case.  For expressors, *SirenSeq* breaks this convention by making all "expressors" upper-case.  The reason is that expressors are meant to be used to script music and so must be short (preferably between 1 and 3 characters long, depending on how often they will be used).  Expressions must be easy to read and write compactly.  Since lower-case single letter symbols tend to be used by programmers for short-term variable names, using them for expressors would lead to too much confusion.
+
+
+Goto: [Previous Tutorial](https://github.com/GerhardVisser/SirenSeq.jl/blob/master/tutorials/Tutorial1.md),  [Next Tutorial](https://github.com/GerhardVisser/SirenSeq.jl/blob/master/tutorials/Tutorial3.md)
+
+
+
