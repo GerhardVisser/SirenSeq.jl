@@ -19,133 +19,173 @@ itof14(val::Int) = ( val = clamp(val,0,16383) ; val/16383. )
 itof7(val::Int) = ( val = clamp(val,0,127) ; val/127. )
 
 
-## audio expression abstract types
+"""
+Abstract atomic audio expression.
+Complex audio expressions (Exp) contain a list of these.
+"""
+abstract Atom
 
-"abstract audio expression"
-abstract Exp
-"abstract atomic audio expression <: Exp"
-abstract Atom <: Exp
-
-
-"allows Int(s) to be interpreted as Exp(s)"
-Expi = Union{Exp,Int}
-
-"converts input to Exp"
-toExp(x::Exp) = x
+"Atom type must have a positive duration"
+abstract Duratom <: Atom
 
 
-"A complex audio expression; an Exp made of zero or more Atom(s).  This is the only non-Atom implementation of Exp"
-immutable Chord <: Exp
-	xs::Vector{Atom}	# order not important, atoms contain thier own offset values
-	
-	Chord(xs::Vector{Atom}) = new(xs)
+## A complex audio expression; an Exp containing of zero or more Atom(s).
+immutable Exp
+	dur::Rational{Int}	# duration
+	as::Vector{Atom}	# order not important, atoms contain thier own offset values
 end
 
-Chord() = Chord(Atom[])
+Exp() = Exp(0//1,Atom[])
+
+
+Base.convert(::Type{Exp}, a::Atom) = Exp(a.dur,Atom[a])
+
+
+atomOrExp(a::Atom) = a
+atomOrExp(x::Exp) = x
+
+function atomOrExp(z)
+	try 
+		return convert(Atom,z)
+	catch
+		return convert(Exp,z)
+	end
+end
+
+
+function offsets(x::Exp)
+	t1 = foldr((a,v)->min(a.ofs,v),1//0,x.as)
+	t2 = foldr((a,v)->max(a.ofs+a.dur,v),-1//0,x.as)
+	t1, t2
+end
 
 
 ## adds Chord to `mt` after its offset
 ## returns Chord length in ticks for `mt`
 ## see SirenSeq.Midi for MidiTrack
-toTrack!(mt::MidiTrack, x::Chord) =  ( t1 = mt.ff ; for z in x.xs ; t1 = max(toTrack!(mt,z),t1) ; end ; t1 )
+toTrack!(mt::MidiTrack, x::Exp) = ( t1 = mt.ff ; for a in x.as ; t1 = max(toTrack!(mt,a),t1) ; end ; t1 )
 
 
-## used by C(xs...)
-chordPush!(xs::Vector{Atom}, x::Atom) = push!(xs,x)
-chordPush!(xs::Vector{Atom}, x::Chord) = for z in x.xs ; chordPush!(xs,z) ; end
+## used by C(zs...)
+atomsPush!(as::Vector{Atom}, a::Atom) = ( push!(as,a) ; a.dur )
+atomsPush!(as::Vector{Atom}, x::Exp) = ( for a in x.as ; atomsPush!(as,a) ; end ; x.dur )
+atomsPush!(as::Vector{Atom}, z) = atomsPush!(as,atomOrExp(z))
 
 
 """
-	C(xs...)
+	C(zs...)
 
-Creates a non-atomic audio expression (Chord) with members of `xs` all played at the same time.
+Creates a non-atomic audio expression (Chord) with members of `zs` all played at the same time.
 """
-function C(xs...)
-	zs = Atom[]
-	for x::Expi in xs
-		chordPush!(zs,toExp(x))
+function C(zs...)
+	as = Atom[]
+	dur = 0//1
+	for z in zs
+		dd = atomsPush!(as,z)
+		dur = max(dur,dd)
 	end
-	Chord(zs)
+	Exp(dur,as)
 end
 
 
-"""
-	chordOp(op::Function, x::Expi)
-
-Applies function `op` (Atom)->(Exp) to all members of `x`.
-
-"""
-chordOp(op::Function, x::Int) = chordOp(op,toExp(x))  
-chordOp(op::Function, x::Atom) = ( zs = Atom[] ; chordPush!(zs,op(x)) ; length(zs) == 1 ? zs[1] : Chord(zs) )
-chordOp(op::Function, x::Chord) = ( zs = Atom[] ; for y in x.xs ; chordPush!(zs,op(y)) ; end ; Chord(zs) )
+atomsOp(op::Function, x::Exp) = ( as = Atom[] ; for a in x.as ; atomsPush!(as,op(a)) ; end ; as )
 
 
 ## return copy of `x` with midi channel of all Atoms changed to `v`
-channel(v::Int, x::Chord) = chordOp(z->channel(v,z),x)
+function channel(v::Int, x::Exp)
+	as = atomsOp(z->channel(v,z),x)
+	Exp(x.dur,as)
+end
+
 
 ## return copy of `x` with all Atom durations and offsets multiplied by `v`
-dilate(v::Rational{Int}, x::Chord) = chordOp(z->dilate(v,z),x)
+function dilate(v::Rational{Int}, x::Exp)
+	as = atomsOp(z->dilate(v,z),x)
+	Exp(x.dur*v,as)
+end
+
 
 ## return copy of `x` with `v` added to all Atom offsets
-sshift(v::Rational{Int}, x::Chord) = chordOp(z->sshift(v,z),x)
+function sshift(v::Rational{Int}, x::Exp)
+ 	as = atomsOp(z->sshift(v,z),x)
+	Exp(x.dur,as)
+end
+
 
 ## return copy of `x` with all Atom velocities mutiplied by `v`
-accel(v::Float64, x::Chord) =  chordOp(z->accel(v,z),x)
+function accel(v::Float64, x::Exp)
+	as = atomsOp(z->accel(v,z),x)
+	Exp(x.dur,as)
+end
+
 
 ## return copy of `x` with `v` added to all note inteval values
-transl(v::Int, x::Chord) = chordOp(z->transl(v,z),x)
+function transl(v::Int, x::Exp)
+	as = atomsOp(z->transl(v,z),x)
+	Exp(x.dur,as)
+end
+
 
 ## return copy of `x` with `v` added to all note octave values
-octave(v::Int, x::Chord) = chordOp(z->octave(v,z),x)
+function octave(v::Int, x::Exp)
+	as = atomsOp(z->octave(v,z),x)
+	Exp(x.dur,as)
+end
+
 
 ## return copy of `x` with all note scales changed to `v`
-sscale(v::Function, x::Chord) = chordOp(z->sscale(v,z),x)
+function sscale(v::Function, x::Exp)
+	as = atomsOp(z->sscale(v,z),x)
+	Exp(x.dur,as)
+end
 
 
-"""
-	len(x::Expi)
+## used by S(zs...)
+function seqPush!(as::Vector{Atom}, a::Atom, dur::Rational{Int})
+	a2 = sshift(dur,a)
+	push!(as,a2)
+	dur+a2.dur
+end
 
-Returns the length::IR (in whole-notes) of `x`.
-"""
-len(x::Chord) = reduce((z1,z2)->max(z1,len(z2)),0//1,x.xs)
-
-
-## used by S(xs...)
-seqPush!(xs::Vector{Atom}, x::Atom, t::Rational{Int}) = push!(xs,sshift(t,toExp(x)))
-seqPush!(xs::Vector{Atom}, x::Chord, t::Rational{Int}) = for z in x.xs ; seqPush!(xs,z,t) ; end
-
-"""
-	S(xs...)
-
-Creates a non-atomic audio expression (Chord) with members of `xs` all played in sequence.
-"""
-function S(xs...)
-	zs = Atom[]
-	t = 0//1
-	for x::Expi in xs
-		seqPush!(zs,toExp(x),t)
-		t += len(x)
+function seqPush!(as::Vector{Atom}, x::Exp, dur::Rational{Int})
+	for a in x.as
+		a2 = sshift(dur,a)
+		push!(as,a2)
 	end
-	Chord(zs)
+	dur+x.dur
+end
+
+seqPush!(as::Vector{Atom}, z, dur::Rational{Int}) = seqPush!(as,atomOrExp(z),dur)
+
+
+"""
+	S(zs...)
+
+Creates a non-atomic audio expression (Chord) with members of `zs` all played in sequence.
+"""
+function S(zs...)
+	as = Atom[]
+	dur = 0//1
+	for z in zs
+		dur = seqPush!(as,z,dur)
+	end
+	Exp(dur,as)
 end
 
 
 """
-	R(v::Int, x::Expi)
+	R(v::Int, z)
 
-Returns `x` repeated `v` times in sequence.
+Returns `z` repeated `v` times in sequence.
 """
-function R(v::Int,x::Expi)
+function R(v::Int, z)
 	@assert v > 0
-	x = toExp(x)
-	ln = len(x)
-	t = 0//1
-	zs = Atom[]
+	as = Atom[]
+	dur = 0//1
 	for i in 1:v
-		seqPush!(zs,x,t)
-		t += ln
+		dur = seqPush!(as,z,dur)
 	end
-	Chord(zs)
+	Exp(dur,as)
 end
 
 

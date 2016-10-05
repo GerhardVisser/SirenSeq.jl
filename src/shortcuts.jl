@@ -7,49 +7,49 @@
 
 Accelirate `x`::Expi; multiplies all atom velocities by `v`.
 """
-A(v::Float64, x::Expi) = accel(v,toExp(x))
+A(v::Float64, x) = accel(v,atomOrExp(x))
 
 """
 	D(v::IR, x::Expi)
 
 Dilate `x`::Expi; multiplies all atom durations and offsets by `v`.
 """
-D(v::IR, x::Expi) = ( @assert 0<v ; dilate(v//1,toExp(x)) )
+D(v::IR, x) = ( @assert 0<v ; dilate(v//1,atomOrExp(x)) )
 
 """
 	F(v::IR, x::Expi) = sshift(v//1,toExp(x))
 
 Shift `x`::Expi: adds `v` to all atom offsets
 """
-F(v::IR, x::Expi) = sshift(v//1,toExp(x))
+F(v::IR, x) = sshift(v//1,atomOrExp(x))
 
 """
 	T(v::Int, x::Expi) = transl(v,toExp(x))
 
 Translate `x`::Expi; adds `v` to all atom interval values.
 """
-T(v::Int, x::Expi) = transl(v,toExp(x))
+T(v::Int, x) = transl(v,atomOrExp(x))
 
 """
 	V(v::Int, x::Expi)
 
 Octave `x`::Expi; sets all note octave values to `v`.
 """
-V(v::Int, x::Expi) = octave(v,toExp(x))
+V(v::Int, x) = octave(v,atomOrExp(x))
 
 """
 	Cha(v::Int, x::Expi) = channel(v,toExp(x))
 
 Channel `x`::Expi; sets all channel values to `v`.
 """
-Cha(v::Int, x::Expi) = channel(v,toExp(x))
+Cha(v::Int, x) = channel(v,atomOrExp(x))
 
 """
 	Sca(v::Function, x::Expi)
 
 Scale `x`::Expi; sets all note scales to `v`.  See SirenSeq.Scales
 """
-Sca(v::Function, x::Expi) = sscale(v,toExp(x))
+Sca(v::Function, x) = sscale(v,atomOrExp(x))
 
 
 ## used by constructor N
@@ -76,9 +76,10 @@ setDefaultOctave(ocv::Function) = ( global defaultOctave = ocv ; )
 """
 	B(dur::IR=1//1)
 
-A blank/rest Atom; duration is `dur`.
+An empty Exp with specified duration
 """
-B(dur::IR=1//1) = Blank(1,0//1,dur//1)
+B(dur::IR=1//1) = ( @assert dur >= 0 ; Exp(dur,Atom[]) )
+
 
 """
 	N(itv::Int, dur::IR=1//1, vel::Float64=1.0)
@@ -86,13 +87,11 @@ B(dur::IR=1//1) = Blank(1,0//1,dur//1)
 
 A note Atom; `itv` is the interval value on its scale, duration is `dur`, velocity is `vel`.
 """
-N(itv::Int,dur::IR=1//1,vel::Float64=1.0) = Note(1,0//1,itv,dur//1,defaultOctave,vel,defaultScale)
-N(itv::Int,vel::Float64=1.0) = Note(1,0//1,itv,1//1,defaultOctave,vel,defaultScale)
+N(itv::Int) = Note(0//1,1//1,1,itv,defaultOctave,1.0,defaultScale)
 
 
 ## integers are converted to the default note
-toExp(v::Int) = N(v)
-len(x::Int) = 1//1
+Base.convert(::Type{Atom}, v::Int) = N(v)
 
 
 """
@@ -100,21 +99,21 @@ len(x::Int) = 1//1
 
 Bank select Atom; bank number is `v`.
 """
-Bank(v::Int) = BankSel(1,0//1,v)
+Bank(v::Int) = BankSel(0//1,1,v)
 
 """
 	Prog(v::Int) 
 
 Program select Atom; program number is `v`.
 """
-Prog(v::Int) = ProgSel(1,0//1,v)
+Prog(v::Int) = ProgSel(0//1,1,v)
 
 """
 	Vol(v::Float64)
 
 Volume set Atom; volume is `v`.
 """
-Vol(v::Float64) = VolSet(1,0//1,v)
+Vol(v::Float64) = VolSet(0//1,1,v)
 
 """
 	Wh() 
@@ -122,15 +121,15 @@ Vol(v::Float64) = VolSet(1,0//1,v)
 
 Picth wheel bend Atom; bend value is `v` [-1,1], use Wh() for no bend (i.e. reset).
 """
-Wh() = PitchWheel(1,0//1,2^13)
-Wh(v::Float64) = ( v = clamp(v,-1,1) ; w = v==0 ? 2^13 : clamp(convert(Int,round(2^13*(1.0+v))),0,2^14-1) ; PitchWheel(1,0//1,w) )
+Wh() = PitchWheel(0//1,1,2^13)
+Wh(v::Float64) = ( v = clamp(v,-1,1) ; w = v==0 ? 2^13 : clamp(convert(Int,round(2^13*(1.0+v))),0,2^14-1) ; PitchWheel(0//1,1,w) )
 
 """
 	Aft(v::Float64)
 
 Channel aftertouch Atom; `v` [0,1] is the value.
 """
-Aft(v::Float64) = ( w = clamp(convert(Int,round(v*127)),0,127) ; ChanAfter(1,0//1,w) )
+Aft(v::Float64) = ( w = clamp(convert(Int,round(v*127)),0,127) ; ChanAfter(0//1,1,w) )
 
 """
 	Cn7(num::Int, v::Float64)
@@ -138,8 +137,8 @@ Aft(v::Float64) = ( w = clamp(convert(Int,round(v*127)),0,127) ; ChanAfter(1,0//
 
 7bit channel control Atom; `num` is the contol number, `v` is value ([0,1] if Float, {0..127} if Int).
 """
-Cn7(num::Int, v::Float64) = ( w = clamp(convert(Int,round(v*127)),0,127) ; Control7(1,0//1,num,w) )
-Cn7(num::Int, v::Int) = Control7(1,0//1,num,clamp(v,0,127))
+Cn7(num::Int, v::Float64) = ( w = clamp(convert(Int,round(v*127)),0,127) ; Control7(0//1,1,num,w) )
+Cn7(num::Int, v::Int) = Control7(0//1,1,num,clamp(v,0,127))
 
 """
 	Cn14(num::Int, v::Float64)
@@ -147,8 +146,8 @@ Cn7(num::Int, v::Int) = Control7(1,0//1,num,clamp(v,0,127))
 
 14bit channel control Atom; `num` is the contol number, `v` is value ([0,1] if Float, {0..2^14-1} if Int).
 """
-Cn14(num::Int, v::Float64) = ( w = clamp(convert(Int,round(v*(2^14-1))),0,2^14-1) ; Control14(1,0//1,num,w) )
-Cn14(num::Int, v::Int) = Control14(1,0//1,num,clamp(v,0,2^14-1))
+Cn14(num::Int, v::Float64) = ( w = clamp(convert(Int,round(v*(2^14-1))),0,2^14-1) ; Control14(0//1,1,num,w) )
+Cn14(num::Int, v::Int) = Control14(0//1,1,num,clamp(v,0,2^14-1))
 
 """
 	Pan()
@@ -192,7 +191,7 @@ Track time signature set Atom;
 `clocks` is the divisions per quarter note (defualts to 24),
 `sub` us the subdivisions of `clocks` (defualts to 8).
 """
-Sig(num::Int=4, den::Int=3, clocks::Int=24, sub::Int=8) = TimeSignature(num,den,clocks,sub)
+Sig(num::Int=4, den::Int=3, clocks::Int=24, sub::Int=8) = TimeSignature(0//1,num,den,clocks,sub)
 
 
 """
@@ -216,24 +215,33 @@ Inst(pg::Tuple{Int,Int}, v::Float64) = S(Bank(pg[1]),Prog(pg[2]),Vol(v))
 
 
 """
+	Da(v1::IR, v2::Float64, x::Expi) = D(v1,A(v2,x))
+
+Dilate `x` by `v1` and accelirate it by `v2`.
+"""
+Da(v1::IR, v2::Float64, x) = D(v1,A(v2,x))
+
+
+"""
 	Con(x::Expi, b1::IR, b2::IR)
 
 Contain `x`; this function makes sure that no events happen outside the time interval [`b1`,`b2`].
 Events that cross this interval may be removed or shortened.
 """
-Con(x::Expi, b1::IR, b2::IR) = ( @assert b2>b1 ; contain(toExp(x),b1//1,b2//1) )
+Con(z) = ( x = atomOrExp(z); Con(x,0//1,x.dur) )
+Con(z, b2::IR) = ( @assert b2>0 ; Con(z,0//1,b2) )
+Con(z, b1::IR, b2::IR) = ( @assert b2>b1 ; contain(convert(Exp,atomOrExp(z)),b1//1,b2//1) )
 
-contain(x::Chord, b1::Rational{Int}, b2::Rational{Int}) = chordOp(z->contain(z,b1,b2),x)
+contain(x::Exp, b1::Rational{Int}, b2::Rational{Int}) = Exp(x.dur,atomsOp(a->contain(a,b1,b2),x))
 
-contain(x::Atom, b1::Rational{Int}, b2::Rational{Int}) = in(:dur,fieldnames(typeof(x))) ? contain1(x,b1,b2) : contain2(x,b1,b2)
-
-function contain1(x::Atom, b1::Rational{Int}, b2::Rational{Int})
-	dur = x.dur ; ofs = x.ofs
+function contain(a::Atom, b1::Rational{Int}, b2::Rational{Int})
+	dur = a.dur ; ofs = a.ofs
 	t1 = ofs ; t2 = ofs+dur
 	if t1 < b1 ; dt = b1-t1 ; ofs += dt ; dur -= dt ; end
 	if t2 > b2 ; dt = t2-b2 ; dur -= dt ; end
-	if dur <= 0 ; return Chord(Atom[]) ; end
-	y = deepcopy(x) ; y.ofs=ofs ; y.dur=dur
+	if dur < 0 ; return Exp(0//1,Atom[]) ; end
+	if dur == 0 && isa(a,Duratom) ; return Exp(0//1,Atom[]) ; end
+	y = deepcopy(a) ; y.ofs=ofs ; y.dur=dur
 	y
 end
 
@@ -245,11 +253,11 @@ Klip `x` by `v`.  The duration of all notes in `x` is multiplied by `v`.
 A blank is inserted after each note where its length is `(1-v)` times the duration of the original note.
 `0 < v < 1` must hold.
 """
-Kl(v::Rational{Int}, x::Expi) = ( @assert 0<v<1 ; klip(v,toExp(x)) )
+Kl(v::Rational{Int}, z) = ( @assert 0<v<1 ; klip(v,atomOrExp(z)) )
 
-klip(v::Rational{Int}, x::Note) = ( y = deepcopy(x) ; y.dur*=v ; S(y,B(x.dur*(1-v))) )
-klip(v::Rational{Int}, x::Atom) = x
-klip(v::Rational{Int}, x::Chord) = chordOp(z->klip(v,z),x)
+klip(v::Rational{Int}, a::Note) = ( y = deepcopy(a) ; y.dur*=v ; Exp(a.dur,Atom[y]) )
+klip(v::Rational{Int}, a::Atom) = a
+klip(v::Rational{Int}, x::Exp) = Exp(x.dur,atomsOp(z->klip(v,z),x))
 
 
 """
@@ -257,19 +265,11 @@ klip(v::Rational{Int}, x::Chord) = chordOp(z->klip(v,z),x)
 
 Split `x` `v` times.  Replaces each note in `x` by the same note repeated `v` times in the same time interval.
 """
-Spl(v::Int, x::Expi) = ( @assert 1<v ; splitt(v,toExp(x)) )
+Spl(v::Int, z) = ( @assert 1<v ; splitt(v,atomOrExp(x)) )
 
-splitt(v::Int, x::Note) = ( y = deepcopy(x) ; y.dur/=v ; y.ofs=0//1 ; F(x.ofs,R(v,y)) )
-splitt(v::Int, x::Atom) = x
-splitt(v::Int, x::Chord) = chordOp(z->splitt(v,z),x)
-
-
-"""
-	Da(v1::IR, v2::Float64, x::Expi) = D(v1,A(v2,x))
-
-Dilate `x` by `v1` and accelirate it by `v2`.
-"""
-Da(v1::IR, v2::Float64, x::Expi) = D(v1,A(v2,x))
+splitt(v::Int, a::Note) = ( y = deepcopy(a) ; y.dur/=v ; y.ofs=0//1 ; F(x.ofs,R(v,y)) )
+splitt(v::Int, a::Atom) = a
+splitt(v::Int, x::Exp) = atomsOp(z->splitt(v,z),x)
 
 
 

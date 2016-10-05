@@ -1,196 +1,249 @@
 
 
-## makes sure the atom is valid
-function atomTest(x::Atom)
-	if in(:cha,fieldnames(typeof(x))) ; @assert 1 <= x.cha < 16 ; end	# channel
-	if in(:dur,fieldnames(typeof(x))) ; @assert 0 < x.dur ; end			# duration
-	if in(:ocv,fieldnames(typeof(x))) ; @assert 1 <= x.ocv < 6 ; end	# octave
-	if in(:vel,fieldnames(typeof(x))) ; @assert 0 < x.vel ; end			# velocity
-	x
+## return copy of `x` with midi channel changed to `v`
+function channel(v::Int, a::Atom)
+	@assert 1 <= v <= 16
+	if in(:cha,fieldnames(typeof(a)))
+		a = deepcopy(a)
+		a.cha = v
+	end
+	a
 end
 
-## return copy of `x` with midi channel changed to `v`
-channel(v::Int, x::Atom) = in(:cha,fieldnames(typeof(x))) ? ( x = deepcopy(x) ; x.cha = v ; atomTest(x) ) : x
 
 ## return copy of `x` with duration and offset multiplied by `v`
-dilate(v::Rational{Int}, x::Atom) = ( x = deepcopy(x) ; x.ofs *= v ; if in(:dur,fieldnames(typeof(x))) ; x.dur *= v ; end ; atomTest(x) )
+function dilate(v::Rational{Int}, a::Atom)
+	@assert v > 0
+	if in(:dur,fieldnames(typeof(a)))
+		a = deepcopy(a)
+		a.ofs *= v
+		a.dur *= v
+	end
+	a
+end
+
 
 ## return copy of `x` with `v` added to offset
-sshift(v::Rational{Int}, x::Atom) = ( x = deepcopy(x) ; x.ofs += v ; atomTest(x) )
+function sshift(v::Rational{Int}, a::Atom)
+	a = deepcopy(a)
+	a.ofs += v
+	a
+end
+
 
 ## return copy of `x` with velocity mutiplied by `v`
-accel(v::Float64, x::Atom) =  in(:vel,fieldnames(typeof(x))) ? ( x = deepcopy(x) ; x.vel *= v ; atomTest(x) ) : x
+function accel(v::Float64, a::Atom)
+	@assert 0 < v
+	if in(:vel,fieldnames(typeof(a)))
+		a = deepcopy(a)
+		a.vel *= v
+	end
+	a
+end
+
 
 ## return copy of `x` with `v` added to note inteval value
-transl(v::Int, x::Atom) = in(:itv,fieldnames(typeof(x))) ? ( x = deepcopy(x) ; x.itv += v ; atomTest(x) ) : x
+function transl(v::Int, a::Atom)
+	if in(:itv,fieldnames(typeof(a)))
+		a = deepcopy(a)
+		a.itv += v 
+	end
+	a
+end
+
 
 ## return copy of `x` with `v` added to note octave value
-octave(v::Int, x::Atom) = in(:ocv,fieldnames(typeof(x))) ? ( x = deepcopy(x) ; x.ocv = v ; atomTest(x) ) : x
+function octave(v::Int, a::Atom)
+	if in(:ocv,fieldnames(typeof(a)))
+		a = deepcopy(a)
+		a.ocv = v
+	end
+	a
+end
+
 
 ## return copy of `x` with note scale changed to `v`
-sscale(v::Function, x::Atom) = in(:sca,fieldnames(typeof(x))) ? ( x = deepcopy(x) ; x.sca = v ; atomTest(x) ) : x
+function sscale(v::Function, a::Atom)
+	if in(:sca,fieldnames(typeof(a)))
+		a = deepcopy(a)
+		a.sca = v
+	end
+	a
+end
 
-## returns the length::IR (in whole-notes) of `x`, includes offset
-len(x::Atom) = x.ofs + ( in(:dur,fieldnames(typeof(x))) ? x.dur : 0//1 )
 
+function atomTest0(a::Atom)
+	if in(:cha,fieldnames(typeof(a))) ; @assert 1 <= a.cha <= 16 ; end
+	if in(:dur,fieldnames(typeof(a))) ; @assert 0 <= a.dur ; end
+	if in(:ocv,fieldnames(typeof(a))) ; @assert 1 <= a.ocv <= 5 ; end
+	if in(:vel,fieldnames(typeof(a))) ; @assert 0 < a.vel ; end
+	a
+end
 
-## silence
-type Blank <: Atom
-	cha::Int			# channel
-	ofs::Rational{Int}	# offset
-	dur::Rational{Int}	# duration
-
-	Blank(cha,ofs,dur) = atomTest(new(cha,ofs,dur))
+function atomTest1(a::Atom)
+	if in(:cha,fieldnames(typeof(a))) ; @assert 1 <= a.cha <= 16 ; end
+	if in(:dur,fieldnames(typeof(a))) ; @assert 0 < a.dur ; end
+	if in(:ocv,fieldnames(typeof(a))) ; @assert 1 <= a.ocv <= 5 ; end
+	if in(:vel,fieldnames(typeof(a))) ; @assert 0 < a.vel ; end
+	a
 end
 
 
 ## play a note (on and off midi events)
-type Note <: Atom
-	cha::Int			# channel
+type Note <: Duratom
 	ofs::Rational{Int}	# offset
-	itv::Int			# interval value
 	dur::Rational{Int}	# duration
+	cha::Int			# channel
+	itv::Int			# interval value
 	ocv::Int			# octave
 	vel::Float64		# velocity
 	sca::Function		# scale
 
-	Note(cha,ofs,itv,dur,ocv,vel,sca) = atomTest(new(cha,ofs,itv,dur,ocv,vel,sca))
+	Note(ofs,dur,cha,itv,ocv,vel,sca) = atomTest1(new(ofs,dur,cha,itv,ocv,vel,sca))
 end
 
 
 ## select instrument bank
 type BankSel <: Atom
-	cha::Int			# channel
 	ofs::Rational{Int}	# offset
+	dur::Rational{Int}	# duration
+	cha::Int			# channel
 	bank::Int			# bank number
 	
-	BankSel(cha,ofs,bank) = ( @assert 0<=bank<=16383 ; atomTest(new(cha,ofs,bank)) )
+	BankSel(ofs,cha,bank) = ( @assert 0<=bank<=16383 ; atomTest0(new(ofs,0//1,cha,bank)) )
 end
 
 
 ## select instrument program
 type ProgSel <: Atom
-	cha::Int			# channel
 	ofs::Rational{Int}	# offset
+	dur::Rational{Int}	# duration
+	cha::Int			# channel
 	prog::Int			# program
 
-	ProgSel(cha,ofs,prog) = ( @assert 0<=prog<=127 ; atomTest(new(cha,ofs,prog)) )
+	ProgSel(ofs,cha,prog) = ( @assert 0<=prog<=127 ; atomTest0(new(ofs,0//1,cha,prog)) )
 end
 
 
 ## set channel volume
 type VolSet <: Atom
-	cha::Int			# channel
 	ofs::Rational{Int}	# offset
+	dur::Rational{Int}	# duration
+	cha::Int			# channel
 	vol::Float64		# volume [0,1]
 
-	VolSet(cha,ofs,vol) = ( @assert 0<=vol<=1 ; atomTest(new(cha,ofs,vol)) )
+	VolSet(ofs,cha,vol) = ( @assert 0<=vol<=1 ; atomTest0(new(ofs,0//1,cha,vol)) )
 end
 
 
 ## pitch wheel bend
 type PitchWheel <: Atom
-	cha::Int			# channel
 	ofs::Rational{Int}	# offset
+	dur::Rational{Int}	# duration
+	cha::Int			# channel
 	val::Int			# value {0..2^14-1}
 
-	PitchWheel(cha,ofs,val) = ( @assert 0<=val<=16383 ; atomTest(new(cha,ofs,val)) )
+	PitchWheel(ofs,cha,val) = ( @assert 0<=val<=16383 ; atomTest0(new(ofs,0//1,cha,val)) )
 end
 
 
 ## channel aftertouch
 type ChanAfter <: Atom
-	cha::Int			# channel
 	ofs::Rational{Int}	# offset
+	dur::Rational{Int}	# duration
+	cha::Int			# channel
 	val::Int			# value {0..127}
 
-	ChanAfter(cha,ofs,val) = ( @assert 0<=val<=127 ; atomTest(new(cha,ofs,val)) )
+	ChanAfter(ofs,cha,val) = ( @assert 0<=val<=127 ; atomTest0(new(ofs,0//1,cha,val)) )
 end
 
 
 ## channel contol 7bit
 type Control7 <: Atom
-	cha::Int			# channel
 	ofs::Rational{Int}	# offset
+	dur::Rational{Int}	# duration
+	cha::Int			# channel
 	num::Int			# control number {64..127}
 	val::Int			# control value {0..127}
 
-	Control7(cha,ofs,num,val) = ( @assert 0<=val<=127 && 64<=num<=127 ; atomTest(new(cha,ofs,num,val)) )
+	Control7(ofs,cha,num,val) = ( @assert 0<=val<=127 && 64<=num<=127 ; atomTest0(new(ofs,0//1,cha,num,val)) )
 end
 
 
 ## channel contol 14bit
 type Control14 <: Atom
-	cha::Int			# channel
 	ofs::Rational{Int}	# offset
+	dur::Rational{Int}	# duration
+	cha::Int			# channel
 	num::Int			# control number {0..31}
 	val::Int			# control value {0..2^14-1}
 
-	Control14(cha::Int,ofs::Rational{Int},num::Int,val::Int) = ( @assert 0<=val<=16383 && 0<=num<=31 ; atomTest(new(cha,ofs,num,val)) )
+	Control14(ofs,cha,num,val) = ( @assert 0<=val<=16383 && 0<=num<=31 ; atomTest0(new(ofs,0//1,cha,num,val)) )
 end
 
 
 ## track marker
 type Marker <: Atom
-	ofs::Rational{Int}		# offset
+	ofs::Rational{Int}	# offset
+	dur::Rational{Int}	# duration
 	name::AbstractString	# marker name
 
-	Marker(ofs,name) = ( @assert length(name) > 0 ; atomTest(new(ofs,name)) )
+	Marker(ofs,name) = ( @assert length(name) > 0 ; atomTest0(new(ofs,0//1,name)) )
 end
 
 
 ## set track time signature
 type TimeSignature <: Atom
-	ofs::Rational{Int} 	# offset
+	ofs::Rational{Int}	# offset
+	dur::Rational{Int}	# duration
 	num::Int			# numerator
 	den::Int			# denominator as logarithm of 2
 	clocks::Int			# divisions per quarter note
 	sub::Int			# subdivisions
 
-	TimeSignature(ofs,num,den,clocks,sub) = ( @assert 1<=num<=32 && 0<=den<=6 && 1<=clocks<64 && 1<=sub<64 ; atomTest(new(ofs,num,dem,clocks,sub)) )
+	TimeSignature(ofs,num,den,clocks,sub) = ( @assert 1<=num<=32 && 0<=den<=6 && 1<=clocks<64 && 1<=sub<64 ; atomTest0(new(ofs,0//1,num,den,clocks,sub)) )
 end
 
 
 ## track tempo
 type Tempo <: Atom
 	ofs::Rational{Int}	# offset
+	dur::Rational{Int}	# duration
 	bpm::Int			# beats per minute
 
-	Tempo(ofs,bpm) = ( @assert 12<=bpm<=1728 ; atomTest(new(ofs,bpm)) )
+	Tempo(ofs,bpm) = ( @assert 12<=bpm<=1728 ; atomTest0(new(ofs,0//1,bpm)) )
 end
 
 
 ## functions for writing Atoms to a MidiTrack; uses Jumidi functions; returns `x` end time in MidiTrack ticks
 
-toTrack!(mt::MidiTrack, x::Blank) = timm(mt,x.ofs) + timm(mt,x.dur)
-
-function toTrack!(mt::MidiTrack, x::Note)
-	t1 = timm(mt,x.ofs) ; t2 = t1 + tim(mt,x.dur) ; @assert t1 < t2-1
-	ve = ftoi7(x.vel) ; pch::Int = x.sca(x.ocv,x.itv) ; @assert 0 <= pch < 128
-	noteOn!(mt,x.ofs,x.cha,pch,ve)
-	noteOff!(mt,x.ofs+x.dur,x.cha,pch,ve)
+function toTrack!(mt::MidiTrack, a::Note)
+	t1 = timm(mt,a.ofs) ; t2 = t1 + tim(mt,a.dur) ; @assert t1 < t2-1
+	ve = ftoi7(a.vel) ; pch::Int = a.sca(a.ocv,a.itv) ; @assert 0 <= pch < 128
+	noteOn!(mt,a.ofs,a.cha,pch,ve)
+	noteOff!(mt,a.ofs+a.dur,a.cha,pch,ve)
 	t2
 end
 
-toTrack!(mt::MidiTrack, x::BankSel) = bankSel!(mt,x.ofs,x.cha,x.bank)
+toTrack!(mt::MidiTrack, a::BankSel) = bankSel!(mt,a.ofs,a.cha,a.bank)
 
-toTrack!(mt::MidiTrack, x::ProgSel) = progSel!(mt,x.ofs,x.cha,x.prog)
+toTrack!(mt::MidiTrack, a::ProgSel) = progSel!(mt,a.ofs,a.cha,a.prog)
 
-toTrack!(mt::MidiTrack, x::VolSet) = control14!(mt,x.ofs,x.cha,7,ftoi14(x.vol))
+toTrack!(mt::MidiTrack, a::VolSet) = control14!(mt,a.ofs,a.cha,7,ftoi14(a.vol))
 
-toTrack!(mt::MidiTrack, x::PitchWheel) = pitchWheel!(mt,x.ofs,x.cha,x.val)
+toTrack!(mt::MidiTrack, a::PitchWheel) = pitchWheel!(mt,a.ofs,a.cha,a.val)
 
-toTrack!(mt::MidiTrack, x::ChanAfter) = chanAfter!(mt,x.ofs,x.cha,x.val)
+toTrack!(mt::MidiTrack, a::ChanAfter) = chanAfter!(mt,a.ofs,a.cha,a.val)
 
-toTrack!(mt::MidiTrack, x::Control7) = control7!(mt,x.ofs,x.cha,x.num,x.val)
+toTrack!(mt::MidiTrack, a::Control7) = control7!(mt,a.ofs,a.cha,a.num,a.val)
 
-toTrack!(mt::MidiTrack, x::Control14) = control14!(mt,x.ofs,x.cha,x.num,x.val)
+toTrack!(mt::MidiTrack, a::Control14) = control14!(mt,a.ofs,a.cha,a.num,a.val)
 
-toTrack!(mt::MidiTrack, x::Marker) = trackMarker!(mt,x.ofs,x.name)
+toTrack!(mt::MidiTrack, a::Marker) = trackMarker!(mt,a.ofs,a.name)
 
-toTrack!(mt::MidiTrack, x::TimeSignature) = timeSigSet!(mt,x.ofs,x.num,x.den,x.clocks,x.sub)
+toTrack!(mt::MidiTrack, a::TimeSignature) = timeSigSet!(mt,a.ofs,a.num,a.den,a.clocks,a.sub)
 
-toTrack!(mt::MidiTrack, x::Tempo) = tempoSet!(mt,x.ofs,x.bpm)
+toTrack!(mt::MidiTrack, a::Tempo) = tempoSet!(mt,a.ofs,a.bpm)
 
 
 

@@ -29,7 +29,7 @@ It then plays the file on ALSA port `port` (e.g. \"130:0\") using the program pm
 `tpq` is the midi ticks per quarter note.  `bpm` is the intial beats per minute (may be changed within `x` at any time).
 If `x` is not specified it will look for a file called \"temp.mid\" and play that.
 """
-function playMidi(x::Expi; port::AbstractString=defaultPlayPort, path::AbstractString="temp", tpq::Int=96, bpm::Int=defaultBpm)
+function playMidi(x; port::AbstractString=defaultPlayPort, path::AbstractString="temp", tpq::Int=96, bpm::Int=defaultBpm)
 	makeMidi(x;path=path,tpq=tpq,bpm=bpm)
 	sleep(0.2)
 	playMidi(port=port,path=path)

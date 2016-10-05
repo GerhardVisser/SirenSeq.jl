@@ -36,7 +36,7 @@ Creates a midi file caled \"`path`.mid\" (do not include the \".mid\" part) usin
 Renders \"`path`.mid\" to \"`name`.pdf\" using musescore.
 Make sure musescore 2.0 or higher is installed.
 """
-function renderMidi(x::Expi; path::AbstractString="temp", name=path, tpq::Int=96, bpm::Int=defaultBpm)
+function renderMidi(x; path::AbstractString="temp", name=path, tpq::Int=96, bpm::Int=defaultBpm)
 	makeMidi(x;path=path,tpq=tpq,bpm=bpm)
 	sleep(0.2)
 	renderMidi(path=path,name=name)

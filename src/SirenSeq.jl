@@ -18,10 +18,10 @@ include("constants/GmDrums.jl")
 export
 
 ## from basics.jl
-IR, Exp, Expi, Atom,
+IR, Exp, Atom, Duratom,
+atomOrExp, offsets,
 C, S, R,
-len, ftoi14, ftoi7, itof14, itof7,
-chordOp, toExp,
+ftoi14, ftoi7, itof14, itof7,
 
 ## from shortcuts.jl
 D, F, A, T, V, Cha, Sca,
