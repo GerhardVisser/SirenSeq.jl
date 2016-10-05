@@ -28,12 +28,12 @@ setDefaultPlayPort(pp::AbstractString) = ( global defaultPlayPort = pp ; )
 
 
 """
-	playMidi([x::Expi]; port=defaultPlayPort, path=\"temp\", tpq=96, bpm=defaultBpm)
+	playMidi([z]; port=defaultPlayPort, path=\"temp\", tpq=96, bpm=defaultBpm)
 
-Creates a midi file caled \"`path`.mid\" (do not include the \".mid\" part) using audio expression `x`.  
+Creates a midi file caled \"`path`.mid\" (do not include the \".mid\" part) using audio expression `z`.  
 It then plays the file on ALSA port `port` (e.g. \"130:0\") using the program pmidi, which must be installed on the system. 
-`tpq` is the midi ticks per quarter note.  `bpm` is the intial beats per minute (may be changed within `x` at any time).
-If `x` is not specified it will look for a file called \"temp.mid\" and play that.
+`tpq` is the midi ticks per quarter note.  `bpm` is the intial beats per minute (may be changed within `z` at any time).
+If `z` is not specified it will look for a file called \"temp.mid\" and play that.
 """
 function playMidi(x; port::AbstractString=defaultPlayPort, path::AbstractString="temp", tpq::Int=96, bpm::Int=defaultBpm)
 	makeMidi(x;path=path,tpq=tpq,bpm=bpm)
