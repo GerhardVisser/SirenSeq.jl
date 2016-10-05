@@ -1,5 +1,8 @@
-module SirenSeq
 
+"""
+A tool for composing and sequencing music using Julia.
+"""
+module SirenSeq
 
 
 include("midi/Midi.jl")
@@ -36,8 +39,11 @@ Inst, Da,
 Con, Kl, Spl,
 
 ## from exportmidi.jl
-setDefaultBpm, makeMidi
+setDefaultBpm, makeMidi,
 
+## submodules
+Play, Render, Midi, Scales,
+GenFluidSF144, GenMuseScoreSF144, GmDrums
 
 
 include("basics.jl")

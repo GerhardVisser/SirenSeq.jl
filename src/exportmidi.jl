@@ -14,11 +14,12 @@ setDefaultBpm(bpm::Int) = ( global defaultBpm = bpm ; )
 
 
 """
-	makeMidi(x::Expi; path::AbstractString=\"temp\", verbose::Bool=false, tpq::Int=96, bpm::Int=defaultBpm)
+	makeMidi(z; path::AbstractString=\"temp\", verbose::Bool=false, tpq::Int=96, bpm::Int=defaultBpm)
 
-Writes audio expression `x` to a new midi file;
-`path` is the file name (do not append \".mid\", that is done automatically),
-`tpq` is the ticks per quarter note, defaults to 96,
+Writes audio expression `z` to a new midi file;
+
+`path` is the file name (do not append \".mid\", that is done automatically), \\
+`tpq` is the ticks per quarter note, defaults to 96, \\
 `bpm` is the beats per minute, defaults to 120 (default can be changed with `setDefaultBpm`).
 """
 function makeMidi(z; path::AbstractString="temp", tpq::Int=96, bpm::Int=defaultBpm, verbose::Bool=false)

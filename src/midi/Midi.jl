@@ -1,7 +1,9 @@
 
 
-## A submodule of SirenSeq used for writing midi files
-
+"""
+Submodule of `SirenSeq`.
+Used for writing MIDI files.
+"""
 module Midi
 
 

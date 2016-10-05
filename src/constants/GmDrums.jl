@@ -1,3 +1,8 @@
+
+"""
+Submodule of `SirenSeq`.
+Defines some shorcut names for the GM drum mapping.
+"""
 module GmDrums
 
 const aBass 	= 35

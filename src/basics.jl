@@ -1,7 +1,11 @@
 
 
+## shortcut
+typealias Rat Rational{Int}
+
+
 "a type used to enter note lengths, e.g. 1//4 == quarter note length"
-IR = Union{Int,Rational{Int}}
+IR = Union{Int,Rat}
 
 
 ## midi conversion helper functions
@@ -20,18 +24,22 @@ itof7(val::Int) = ( val = clamp(val,0,127) ; val/127. )
 
 
 """
-Abstract atomic audio expression.
-Complex audio expressions (Exp) contain a list of these.
+Abstract atomic audio expression. \\
+Complex audio expressions (`Exp`) contain a list of these.
 """
 abstract Atom
 
-"Atom type must have a positive duration"
+"when non-zero duration is required"
 abstract Duratom <: Atom
 
 
-## A complex audio expression; an Exp containing of zero or more Atom(s).
+"""
+A complex audio expression. \\
+It contains zero or more `Atom`(s). \\
+It has its own duration seperate of its `Atom` members.
+"""
 immutable Exp
-	dur::Rational{Int}	# duration
+	dur::Rat			# duration
 	as::Vector{Atom}	# order not important, atoms contain thier own offset values
 end
 
@@ -41,6 +49,12 @@ Exp() = Exp(0//1,Atom[])
 Base.convert(::Type{Exp}, a::Atom) = Exp(a.dur,Atom[a])
 
 
+"""
+	atomOrExp(z)
+
+Tries to convert input to an `Atom`. \\
+If that fails, tries to convert to `Exp`.
+"""
 atomOrExp(a::Atom) = a
 atomOrExp(x::Exp) = x
 
@@ -52,7 +66,13 @@ function atomOrExp(z)
 	end
 end
 
+"""
+	offsets(x::Exp)
 
+Returns `(t1,t2)` where, \\
+`t1` is the start of the earliest `Atom` \\
+`t2` is the end of the latest `Atom`
+"""
 function offsets(x::Exp)
 	t1 = foldr((a,v)->min(a.ofs,v),1//0,x.as)
 	t2 = foldr((a,v)->max(a.ofs+a.dur,v),-1//0,x.as)
@@ -60,13 +80,13 @@ function offsets(x::Exp)
 end
 
 
-## adds Chord to `mt` after its offset
-## returns Chord length in ticks for `mt`
+## adds x to mt after its offset
+## returns x's length in ticks for mt
 ## see SirenSeq.Midi for MidiTrack
 toTrack!(mt::MidiTrack, x::Exp) = ( t1 = mt.ff ; for a in x.as ; t1 = max(toTrack!(mt,a),t1) ; end ; t1 )
 
 
-## used by C(zs...)
+## used by C(zs...) and atomsOp
 atomsPush!(as::Vector{Atom}, a::Atom) = ( push!(as,a) ; a.dur )
 atomsPush!(as::Vector{Atom}, x::Exp) = ( for a in x.as ; atomsPush!(as,a) ; end ; x.dur )
 atomsPush!(as::Vector{Atom}, z) = atomsPush!(as,atomOrExp(z))
@@ -75,7 +95,7 @@ atomsPush!(as::Vector{Atom}, z) = atomsPush!(as,atomOrExp(z))
 """
 	C(zs...)
 
-Creates a non-atomic audio expression (Chord) with members of `zs` all played at the same time.
+Creates a non-atomic audio expression (`Exp`) with members of `zs` all played at the same time.
 """
 function C(zs...)
 	as = Atom[]
@@ -140,7 +160,7 @@ function sscale(v::Function, x::Exp)
 end
 
 
-## used by S(zs...)
+## used by S(zs...) and R(v,z)
 function seqPush!(as::Vector{Atom}, a::Atom, dur::Rational{Int})
 	a2 = sshift(dur,a)
 	push!(as,a2)
@@ -161,7 +181,7 @@ seqPush!(as::Vector{Atom}, z, dur::Rational{Int}) = seqPush!(as,atomOrExp(z),dur
 """
 	S(zs...)
 
-Creates a non-atomic audio expression (Chord) with members of `zs` all played in sequence.
+Creates a non-atomic audio expression (`Exp`) with members of `zs` all played in sequence.
 """
 function S(zs...)
 	as = Atom[]

@@ -1,6 +1,11 @@
+
+"""
+Submodule of `SirenSeq`.
+Defines instrument name shortcuts for some instruments of the general musescore 144 soundfont file.
+`(bank,program)` pairs defined here are used by the `SirenSeq.Inst` function.
+"""
 module GenMuseScoreSF144
 
-## instrument (bank,program) numbers used by the SirenSeq.Inst function
 
 const iGrandPiano		= (0,0)
 const iBrightPiano		= (0,1)

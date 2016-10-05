@@ -1,5 +1,8 @@
 
-
+"""
+Submodule of `SirenSeq`.
+Standard musical scales are defined here.
+"""
 module Scales
 
 

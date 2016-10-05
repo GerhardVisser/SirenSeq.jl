@@ -1,3 +1,9 @@
+
+"""
+Submodule of `SirenSeq`.
+Used for playing `SirenSeq` expressions.
+Must have some synthesizer setup and must have the `pmidi` program installed.
+"""
 module Play
 
 
@@ -15,7 +21,7 @@ defaultPlayPort = "130:0"
 """
 	setDefaultPlayPort(pp::AbstractString) 
 
-Sets the default ALSA midi port to which `playMidi` will play to. 
+Sets the default ALSA midi port to which `playMidi` will play to. \\
 For example, if 128:0 is the qsynth midi input port then use, `setDefaultPlayPort(\"130:0\")`.
 """
 setDefaultPlayPort(pp::AbstractString) = ( global defaultPlayPort = pp ; )
@@ -24,7 +30,7 @@ setDefaultPlayPort(pp::AbstractString) = ( global defaultPlayPort = pp ; )
 """
 	playMidi([x::Expi]; port=defaultPlayPort, path=\"temp\", tpq=96, bpm=defaultBpm)
 
-Creates a midi file caled \"`path`.mid\" (do not include the \".mid\" part) using audio expression `x`.
+Creates a midi file caled \"`path`.mid\" (do not include the \".mid\" part) using audio expression `x`.  
 It then plays the file on ALSA port `port` (e.g. \"130:0\") using the program pmidi, which must be installed on the system. 
 `tpq` is the midi ticks per quarter note.  `bpm` is the intial beats per minute (may be changed within `x` at any time).
 If `x` is not specified it will look for a file called \"temp.mid\" and play that.
