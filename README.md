@@ -8,8 +8,11 @@ A tool for composing and sequencing music using [Julia](http://julialang.org/). 
 
 Use these links to get started,
 
- - [Tutorial1](https://github.com/GerhardVisser/SirenSeq.jl/blob/master/tutorials/Tutorial1.md)
- - [Tutorial2](https://github.com/GerhardVisser/SirenSeq.jl/blob/master/tutorials/Tutorial2.md)
- - [Tutorial3](https://github.com/GerhardVisser/SirenSeq.jl/blob/master/tutorials/Tutorial3.md)
+ - [Tutorial1:  Playback and Rendering](https://github.com/GerhardVisser/SirenSeq.jl/blob/master/tutorials/Tutorial1.md)
+ - [Tutorial2:  Audio Expressions](https://github.com/GerhardVisser/SirenSeq.jl/blob/master/tutorials/Tutorial2.md)
+ - [Tutorial3:  Principles by Example](https://github.com/GerhardVisser/SirenSeq.jl/blob/master/tutorials/Tutorial3.md)
 
 More tutorials will be added soon.
+
+
+
