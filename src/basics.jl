@@ -211,9 +211,11 @@ end
 
 function Base.isequal(x::Exp, y::Exp)
 	if x.dur != y.dur ; return false ; end
-	if length(x.as) != length(y.as) ; return false ; end
-	for i in 1:length(x.as)
-		if !isequal(x.as[i],y.as[i]) ; return false ; end
+	as1 = x.as
+	as2 = y.as
+	if length(as1) != length(as2) ; return false ; end
+	for i in 1:length(as1)
+		if !isequal(as1[i],as2[i]) ; return false ; end
 	end
 	true
 end
