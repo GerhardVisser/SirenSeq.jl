@@ -243,6 +243,17 @@ toTrack!(mt::MidiTrack, a::TimeSignature) = timeSigSet!(mt,a.ofs,a.num,a.den,a.c
 toTrack!(mt::MidiTrack, a::Tempo) = tempoSet!(mt,a.ofs,a.bpm)
 
 
+function Base.isequal(x::Atom, y::Atom)
+	if typeof(x) != typeof(y) ; return false ; end
+	for t in fieldnames(typeof(x))
+		v1 = getfield(x,t)
+		v2 = getfield(y,t)
+		if !isequal(v1,v2) ; return false ; end
+	end
+	true
+end
+
+
 
 
 

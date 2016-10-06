@@ -209,6 +209,23 @@ function R(v::Int, z)
 end
 
 
+function Base.isequal(x::Exp, y::Exp)
+	if x.dur != y.dur ; return false ; end
+	if length(x.as) != length(y.as) ; return false ; end
+	for i in 1:length(x.as)
+		if !isequal(x.as[i],y.as[i]) ; return false ; end
+	end
+	true
+end
+
+
+function Base.isequal(x::Atom, y::Exp)
+	if x.dur != y.dur ; return false ; end
+	if length(y.as) != 1 ; return false ; end
+	isequal(x,t.as[1])
+end
+
+
 
 
 
