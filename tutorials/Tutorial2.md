@@ -17,7 +17,7 @@ The most common midi atom is `Note <: Atom`.  You should not construct a `Note` 
 ```
 Note:   ch1,   ofs =  0 + 0//1,  dur = 1//1,   itv =  7,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
 ```
-The meaning of the displayed values was described in the previous lesson ([Tutorial1](https://github.com/GerhardVisser/SirenSeq.jl/blob/master/tutorials/Tutorial1.md#creating-a-note-sequence)).
+The meaning of these displayed values was described in the previous lesson ([Tutorial1](https://github.com/GerhardVisser/SirenSeq.jl/blob/master/tutorials/Tutorial1.md#creating-a-note-sequence)).
 
 There is only one **complex audio expression** type,
 ```julia
@@ -26,7 +26,7 @@ immutable Exp
 	as::Vector{Atom}	# order not important, atoms contain thier own offset values
 end
 ```
-`dur` is the duration in whole-note lengths of the expression.  `as` is a list of the atoms that make up the expression.  Do not attempt to alter the elements of `as` directly.  Expression are meant to be handeled as immutable by the user.
+`dur` is the duration in whole-note lengths of the expression.  `as` is a list of the atoms that make up the expression.  Do not attempt to alter the elements of `as` directly.  Expressions are meant to be handeled as immutable by the user.
 
 
 

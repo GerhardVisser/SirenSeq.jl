@@ -10,7 +10,7 @@ This tutorial presents some general principles for how to best construct express
 
 ## Top-Down vs. Bottom-Up
 
-*SirenSeq* is meant to depart from traditional music notation and common midi editors by using a bottom-up approach to scripting.  If you think of writing sheet music, top level variables are written first and lower level details last.  First, the time signature is defined, then the instruments, then the instrument volumes, then the scale, then the first bar is written and then notes are added to it.  With *SirenSeq's* bottom-up approach much of this is reverse.  As an example, here is one way to do it *bottom-up*: first the notes are defined, then thier relations relative to nearby notes are defined, then the time duration of those notes are defined, then the instruments and thier volumes, and then the scales of different parts.  The next subsection gives a more concrete example.
+*SirenSeq* is meant to depart from traditional music notation and common midi editors by using a bottom-up approach to scripting.  If you think of writing sheet music, top level variables are written first and lower level details last.  First, the time signature is defined, then the instruments, then the instrument volumes, then the scale, then the first bar is written and then notes are added to it.  With *SirenSeq's* bottom-up approach much of this is reverses.  As an example, here is one way to do it *bottom-up*: first the notes are defined, then thier relations relative to nearby notes are defined, then the time duration of those notes are defined, then the instruments and thier volumes, and then the scales of different parts.  The next subsection gives a more concrete example.
 
 
 ## Delay Default Modification
@@ -108,7 +108,7 @@ melPlayer2 = Inst(5,GenMuseScoreSF144.iHarpsichord),0.9)
 
 band = C(bassPlayer,drumPlayer,melPlayer1,melPlayer2)
 
-# render verse to .pdf file
+# render verse to .mid file
 renderMidi(S(band,verse))
 ```
 
