@@ -211,8 +211,8 @@ end
 
 function Base.isequal(x::Exp, y::Exp)
 	if x.dur != y.dur ; return false ; end
-	as1 = x.as
-	as2 = y.as
+	as1 = sort!(x.as,lt=atomHashOrder)
+	as2 = sort!(y.as,lt=atomHashOrder)
 	if length(as1) != length(as2) ; return false ; end
 	for i in 1:length(as1)
 		if !isequal(as1[i],as2[i]) ; return false ; end
@@ -225,6 +225,19 @@ function Base.isequal(x::Atom, y::Exp)
 	if x.dur != y.dur ; return false ; end
 	if length(y.as) != 1 ; return false ; end
 	isequal(x,t.as[1])
+end
+
+
+function atomHashOrder(x1::Atom, x2::Atom)
+	if hash(typeof(x1)) < hash(typeof(x1)) ; return true ; end
+	@assert typeof(x1) == typeof(x2)
+	for t in fieldnames(typeof(x1))
+		v1 = getfield(x1,t)
+		v2 = getfield(x2,t)
+		if v1 == v2 ; continue ; end
+		return hash(v2) < hash(v1)
+	end
+	return false
 end
 
 
