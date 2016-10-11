@@ -123,6 +123,24 @@ testName("dilate equality 3")
 @test isequal( D(3//2,S(1,2)), S(D(3//2,1),D(3//2,2)) )
 
 
+testName("translate equality 1")
+@test isequal( T(-1,4), N(3) )
+
+testName("translate equality 2")
+@test isequal( T(3,C(1,4)), C(4,T(-1,8)) )
+
+
+testName("shift equality 1")
+@test isequal( F(1//3,7), F(4//3,F(-1,7)) )
+
+testName("shift equality 2")
+@test F(3//2,D(1//5,7)).dur == 1//5
+
+testName("shift equality 3")
+@test F(3//2,S(1,2,3)).dur == 3//1
+
+
+
 end
 
 
