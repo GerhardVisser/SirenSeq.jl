@@ -140,6 +140,28 @@ testName("shift equality 3")
 @test F(3//2,S(1,2,3)).dur == 3//1
 
 
+## domain errors
+
+testName("dilate domain 1")
+@test_throws DomainError D(0,N(7))
+
+testName("dilate domain 2")
+@test_throws DomainError D(0,C(7,6))
+
+testName("dilate domain 3")
+@test_throws DomainError D(-1//2,N(7))
+
+
+testName("accel domain 1")
+@test_throws DomainError A(0.,N(7))
+
+testName("accel domain 2")
+@test_throws DomainError A(0.,C(7,6))
+
+testName("accel domain 3")
+@test_throws DomainError A(-0.1,N(7))
+
+
 
 end
 
