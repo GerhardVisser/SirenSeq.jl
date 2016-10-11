@@ -7,7 +7,7 @@
 
 Accelirate `z`::Expi; multiplies all atom velocities by `v`.
 """
-A(v::Float64, z) = accel(v,atomOrExp(z))
+A(v::Float64, z) = 0 < v ? accel(v,atomOrExp(z)) : throw(DomainError())
 
 
 """
@@ -15,7 +15,7 @@ A(v::Float64, z) = accel(v,atomOrExp(z))
 
 Dilate `z`; multiplies all atom durations and offsets by `v`.
 """
-D(v::IR, z) = ( @assert 0<v ; dilate(Rat(v),atomOrExp(z)) )
+D(v::IR, z) = 0 < v ? dilate(Rat(v),atomOrExp(z)) : throw(DomainError())
 
 
 """
