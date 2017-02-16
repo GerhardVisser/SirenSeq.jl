@@ -15,7 +15,7 @@ using SirenSeq, SirenSeq.Play, SirenSeq.Render
 ```
 The most common midi atom is `Note <: Atom`.  You should not construct a `Note` object directly and the type is not exported by the `SirenSeq` module.  Instead, a note can be constructed using `N`.  Type `?N` into the julia terminal to see a description.  If you run `N(7)` you should see,
 ```
-Note:   ch1,   ofs =  0 + 0//1,  dur = 1//1,   itv =  7,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
+Note:   ch1,   ofs =  0 + 0//1,  dur = 1//1,   itv =  7,  ocv = 3,  vel = 1.00,  sca = cMaj
 ```
 The meaning of these displayed values was described in the previous lesson ([Tutorial1](https://github.com/GerhardVisser/SirenSeq.jl/blob/master/tutorials/Tutorial1.md#creating-a-note-sequence)).
 
@@ -83,7 +83,7 @@ A(0.5,A(4.0,7))
 ```
 you should see,
 ```
-Note:   ch1,   ofs =  0 + 0//1,  dur = 1//1,   itv =  7,  ocv = 3,  vel = 2.00,  sca = SirenSeq.Scales.cMaj
+Note:   ch1,   ofs =  0 + 0//1,  dur = 1//1,   itv =  7,  ocv = 3,  vel = 2.00,  sca = cMaj
 ```
 `A` knows that its second argument should be an audio expression so it converts `7` to `N(7)`.  Most exported *SirenSeq* functions that take audio expressions (`Atom` or `Exp`) as arguments will have this property; using the `Base.convert` function to convert to `Atom` or `Exp`.  The inner `A` changes `vel` to `4.0`  while the outer `A` changes the `4.0` to `2.0`.  If you play or render this note, the velocity value `2.0` will be clipped to `1.0` just before going into the midi file.
 
@@ -94,7 +94,7 @@ D(1//2,7)
 ```
 should produce,
 ```
-Note:   ch1,   ofs =  0 + 0//1,  dur = 1//2,   itv =  7,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
+Note:   ch1,   ofs =  0 + 0//1,  dur = 1//2,   itv =  7,  ocv = 3,  vel = 1.00,  sca = cMaj
 ```
 Notice that this is the note `N(7)` with its duration multiplied by `1//2` to produce a half-note.  All time durations and time multipliers in *SirenSeq* should be specified as `Int`s or as rationals of type `Rational{Int}`, never as floating points.  If you run `?D` the following description should come up,
 ```
