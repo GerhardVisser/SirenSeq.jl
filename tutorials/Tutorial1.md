@@ -24,12 +24,12 @@ sq = S(1,2,3,2)
 You should see,
 ```
 Exp:    dur = 4//1
-  Note:   ch1,   ofs =  0 + 0//1,  dur = 1//1,   itv =  1,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
-  Note:   ch1,   ofs =  1 + 0//1,  dur = 1//1,   itv =  2,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
-  Note:   ch1,   ofs =  2 + 0//1,  dur = 1//1,   itv =  3,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
-  Note:   ch1,   ofs =  3 + 0//1,  dur = 1//1,   itv =  2,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
+  Note:   ch1,   ofs =  0 + 0//1,  dur = 1//1,   itv =  1,  ocv = 3,  vel = 1.00,  sca = cMaj
+  Note:   ch1,   ofs =  1 + 0//1,  dur = 1//1,   itv =  2,  ocv = 3,  vel = 1.00,  sca = cMaj
+  Note:   ch1,   ofs =  2 + 0//1,  dur = 1//1,   itv =  3,  ocv = 3,  vel = 1.00,  sca = cMaj
+  Note:   ch1,   ofs =  3 + 0//1,  dur = 1//1,   itv =  2,  ocv = 3,  vel = 1.00,  sca = cMaj
 ```
-The top line `Exp:` just means that `sq` is a collection of events; in this case, 4 Notes.  `dur = 4//1` means that `sq` has a duration of 4 whole-note lengths.  Let's look at the 4 notes.  `ch1` means that the note will be played on channel 1.  `ofs` represents an *offset*.  `ofs = 2 + 0//1` means that the note starts 2 whole-note lengths after the start of `sq` (at offset `ofs = 0`).  `dur` represents duration.  `dur = 1//1` means that the note is held for 1 whole-note duration.  `itv` represents an interval on some scale; in this case the scale is `sca = SirenSeq.Scales.cMaj` which is the *C Major* scale.  When `itv` is less than 1, the scale moves an octave down.  When `itv` is greater than 7, the scale moves an octave up.  `ocv` represents the note octave which is 3 for these notes.  As an example, if `ocv = 3` and `itv = -2`, the note played will be on the 2nd octave as `itv` is taken relative to the `ocv` value.  Finally, `vel` represents the note velocity.  Velocity should be in the range `(0,1]`, otherwise it will be clipped.  Clipping happens when the midi file is written but not when the object is created so values greater than `1.0` can be used in intermediate calculations.
+The top line `Exp:` just means that `sq` is a collection of events; in this case, 4 Notes.  `dur = 4//1` means that `sq` has a duration of 4 whole-note lengths.  Let's look at the 4 notes.  `ch1` means that the note will be played on channel 1.  `ofs` represents an *offset*.  `ofs = 2 + 0//1` means that the note starts 2 whole-note lengths after the start of `sq` (at offset `ofs = 0`).  `dur` represents duration.  `dur = 1//1` means that the note is held for 1 whole-note duration.  `itv` represents an interval on some scale; in this case the scale is `sca = cMaj` which is the *C Major* scale.  When `itv` is less than 1, the scale moves an octave down.  When `itv` is greater than 7, the scale moves an octave up.  `ocv` represents the note octave which is 3 for these notes.  As an example, if `ocv = 3` and `itv = -2`, the note played will be on the 2nd octave as `itv` is taken relative to the `ocv` value.  Finally, `vel` represents the note velocity.  Velocity should be in the range `(0,1]`, otherwise it will be clipped.  Clipping happens when the midi file is written but not when the object is created so values greater than `1.0` can be used in intermediate calculations.
 
 
 ## Playing a Note Sequence
@@ -68,11 +68,9 @@ This tells `playMidi` to write to *foo.mid* and play at 200 beats per minute (in
 
 ## Interrupting Play
 
-Sometimes you will want to interrupt playback.  One problem that can occur when simply killing the *pmidi* process is that some note keeps playing indefinitely because the interrupt occurred before a note-off midi event.  To prevent this, *SirenSeq* must play a special midi file called *stop.mid* immediately after the interrupt which tells the sequencer to stop all sounds.  To make this more customizable, the *stop.mid* should reside in your project working directory so you can replace it with anything you like later.  To generate the default *stop.mid* file in your project working directory, run,
-```julia
-makeStopMidi()
-```
-Now you can use the function `stop()` to interrupter play.  Running,
+Sometimes you will want to interrupt playback.  One problem that can occur when simply killing the *pmidi* process is that some note keeps playing indefinitely because the interrupt occurred before a note-off midi event.  To prevent this, *SirenSeq* must play a special midi file called *stop.mid* immediately after the interrupt which tells the sequencer to stop all sounds.  The *stop.mid* will reside in your project working directory.  If it does not exist there, it will be created the first time `stop()` is run.  You can replace it with anything you like later if you want a customised sequence of midi events to be sent when `stop()` is run.
+
+Let's test it, running,
 ```julia
 playMidi(R(8,sq))
 ```

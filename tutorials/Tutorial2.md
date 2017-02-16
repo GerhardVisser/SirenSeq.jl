@@ -70,10 +70,10 @@ A(0.5,sq1)
 you should see,
 ```
 Exp:    dur = 4//1
-  Note:   ch1,   ofs =  0 + 0//1,  dur = 1//1,   itv =  1,  ocv = 3,  vel = 0.50,  sca = SirenSeq.Scales.cMaj
-  Note:   ch1,   ofs =  1 + 0//1,  dur = 1//1,   itv =  2,  ocv = 3,  vel = 0.50,  sca = SirenSeq.Scales.cMaj
-  Note:   ch1,   ofs =  2 + 0//1,  dur = 1//1,   itv =  3,  ocv = 3,  vel = 0.50,  sca = SirenSeq.Scales.cMaj
-  Note:   ch1,   ofs =  3 + 0//1,  dur = 1//1,   itv =  2,  ocv = 3,  vel = 0.50,  sca = SirenSeq.Scales.cMaj
+  Note:   ch1,   ofs =  0 + 0//1,  dur = 1//1,   itv =  1,  ocv = 3,  vel = 0.50,  sca = cMaj
+  Note:   ch1,   ofs =  1 + 0//1,  dur = 1//1,   itv =  2,  ocv = 3,  vel = 0.50,  sca = cMaj
+  Note:   ch1,   ofs =  2 + 0//1,  dur = 1//1,   itv =  3,  ocv = 3,  vel = 0.50,  sca = cMaj
+  Note:   ch1,   ofs =  3 + 0//1,  dur = 1//1,   itv =  2,  ocv = 3,  vel = 0.50,  sca = cMaj
 ```
 The velocities `vel` of all notes have been multiplied by 0.5.  The modifier `A` did not change `sq1`, it returned a modified copy of it.  None of the exported *SirenSeq* functions that take audio expressions (`Atom` or `Exp`) as arguments will modify those arguments.
 
@@ -113,10 +113,10 @@ D(1//4,sq1)
 and you should see,
 ```
 Exp:    dur = 1//1
-  Note:   ch1,   ofs =  0 + 0//1,  dur = 1//4,   itv =  1,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
-  Note:   ch1,   ofs =  0 + 1//4,  dur = 1//4,   itv =  2,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
-  Note:   ch1,   ofs =  0 + 1//2,  dur = 1//4,   itv =  3,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
-  Note:   ch1,   ofs =  0 + 3//4,  dur = 1//4,   itv =  2,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
+  Note:   ch1,   ofs =  0 + 0//1,  dur = 1//4,   itv =  1,  ocv = 3,  vel = 1.00,  sca = cMaj
+  Note:   ch1,   ofs =  0 + 1//4,  dur = 1//4,   itv =  2,  ocv = 3,  vel = 1.00,  sca = cMaj
+  Note:   ch1,   ofs =  0 + 1//2,  dur = 1//4,   itv =  3,  ocv = 3,  vel = 1.00,  sca = cMaj
+  Note:   ch1,   ofs =  0 + 3//4,  dur = 1//4,   itv =  2,  ocv = 3,  vel = 1.00,  sca = cMaj
 ```
 The modified sequence takes up 1 note length instead of 4.  Notice that the offsets `ofs` were also multiplied by `1//4`.  The dilate `D` modifier multiplies both atom offsets and durations by its argument.  While all `Atom`s have an offset, some will not have a duration (e.g. midi control signals).
 
@@ -136,10 +136,10 @@ R(4,z)
 it will produce,
 ```
 Exp:    dur = 2//1
-  Note:   ch1,   ofs =  0 + 1//2,  dur = 1//2,   itv =  7,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
-  Note:   ch1,   ofs =  1 + 0//1,  dur = 1//2,   itv =  7,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
-  Note:   ch1,   ofs =  1 + 1//2,  dur = 1//2,   itv =  7,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
-  Note:   ch1,   ofs =  2 + 0//1,  dur = 1//2,   itv =  7,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
+  Note:   ch1,   ofs =  0 + 1//2,  dur = 1//2,   itv =  7,  ocv = 3,  vel = 1.00,  sca = cMaj
+  Note:   ch1,   ofs =  1 + 0//1,  dur = 1//2,   itv =  7,  ocv = 3,  vel = 1.00,  sca = cMaj
+  Note:   ch1,   ofs =  1 + 1//2,  dur = 1//2,   itv =  7,  ocv = 3,  vel = 1.00,  sca = cMaj
+  Note:   ch1,   ofs =  2 + 0//1,  dur = 1//2,   itv =  7,  ocv = 3,  vel = 1.00,  sca = cMaj
 ```
 Use the `renderMidi` command to see what `R(4)` looks like.  Notice here that the first note begins playing one half-note duration after the start of the experssion while the last note ends one half half-note duration after the expression ends (`dur = 2//1`).  This behaviour may seem odd at first but using shift `F` to create small offsets can be usefull (*to be discussed in a future tutorial TODO*).
 
