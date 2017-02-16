@@ -228,13 +228,6 @@ function Base.isequal(x::Atom, y::Exp)
 end
 
 
-function Base.isequal(y::Exp, x::Atom)
-	if x.dur != y.dur ; return false ; end
-	if length(y.as) != 1 ; return false ; end
-	isequal(x,t.as[1])
-end
-
-
 function atomHashOrder(x1::Atom, x2::Atom)
 	if hash(typeof(x1)) < hash(typeof(x1)) ; return true ; end
 	@assert typeof(x1) == typeof(x2)

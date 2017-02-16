@@ -26,15 +26,15 @@ Test.with_handler(TestNames.handler) do
 
 testName("print note")
 s1 = string(N(7))
-s2 = "Note:   ch1,   ofs =  0 + 0//1,  dur = 1//1,   itv =  7,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj"
+s2 = "Note:   ch1,   ofs =  0 + 0//1,  dur = 1//1,   itv =  7,  ocv = 3,  vel = 1.00,  sca = cMaj"
 
 @test s1 == s2
 
 testName("print sequence 1")
 s1 = string(S(1,2))
 s2 = "Exp:    dur = 2//1
-  Note:   ch1,   ofs =  0 + 0//1,  dur = 1//1,   itv =  1,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj
-  Note:   ch1,   ofs =  1 + 0//1,  dur = 1//1,   itv =  2,  ocv = 3,  vel = 1.00,  sca = SirenSeq.Scales.cMaj"
+  Note:   ch1,   ofs =  0 + 0//1,  dur = 1//1,   itv =  1,  ocv = 3,  vel = 1.00,  sca = cMaj
+  Note:   ch1,   ofs =  1 + 0//1,  dur = 1//1,   itv =  2,  ocv = 3,  vel = 1.00,  sca = cMaj"
 
 @test s1 == s2
 

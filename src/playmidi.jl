@@ -87,6 +87,9 @@ Use the function `makeStopMidi` to generate this file in your project directory.
 """
 function stop(p; port::AbstractString=defaultPlayPort, path::AbstractString="stop")
 	if process_running(p) ; kill(p) ; end
+	if !isfile("$(path).mid")
+		makeStopMidi(path)
+	end
 	sleep(0.1)
 	playMidiQuick(port=defaultPlayPort,path="stop")
 	sleep(0.1)
@@ -99,6 +102,9 @@ function stop()
 	try
 		run(`killall pmidi`)
 	catch err
+	end
+	if !isfile("stop.mid")
+		makeStopMidi("stop")
 	end
 	sleep(0.1)
 	playMidiQuick(port=defaultPlayPort,path="stop")

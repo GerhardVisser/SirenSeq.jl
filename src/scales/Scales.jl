@@ -47,6 +47,21 @@ type PercussionScale <: Scale
 end
 
 
+function Base.isequal(x::ChromaticMode, y::ChromaticMode)
+	if !isequal(x.pmap,y.pmap) ; return false ; end
+	if !isequal(x.basev,y.basev) ; return false ; end
+	if !isequal(x.name,y.name) ; return false ; end
+	true
+end
+
+function Base.isequal(x::PercussionScale, y::PercussionScale)
+	true
+end
+
+function Base.isequal(x::PercussionScale, y::ChromaticMode)
+	false
+end
+
 function toPitch(ocv::Int, val::Int, scaleDict::Dict{Int,Int}, ofs::Int)
 	ssz = length(scaleDict) ;  @assert  0 < ssz < 12
 	while val < 1
