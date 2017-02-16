@@ -88,8 +88,8 @@ end
 
 function adjustAtoms(x1::Note, x2::Note)
 	if x1.cha != x2.cha ; return x1 ; end
-	pch1::Int = x1.sca(x1.ocv,x1.itv)
-	pch2::Int = x2.sca(x2.ocv,x2.itv)
+	pch1::Int = Scales.getPitch(x1.sca,x1.ocv,x1.itv)
+	pch2::Int = Scales.getPitch(x2.sca,x2.ocv,x2.itv)
 	if pch1 != pch2 ; return x1 ; end
 	t1 = x1.ofs ; t2 = x2.ofs
 	if t1 == t2 ; return false ; end

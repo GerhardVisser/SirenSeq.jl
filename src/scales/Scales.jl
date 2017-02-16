@@ -27,7 +27,24 @@ gLyd,gMaj,gMix,gDor,gMin,gPhr,gLoc,
 ## a scale which ignores `ocv` and uses `val` as the midi pitch value
 ## useful for percussion tracks
 
-noScale
+noScale,
+
+## returns the pitch value for a given scale and given (octave,interval) pair
+
+getPitch
+
+
+abstract Scale
+
+type ChromaticMode <: Scale
+	pmap::Dict{Int,Int}
+	basev::Int
+	name::AbstractString
+end
+
+type PercussionScale <: Scale
+	name::AbstractString
+end
 
 
 function toPitch(ocv::Int, val::Int, scaleDict::Dict{Int,Int}, ofs::Int)
@@ -44,72 +61,82 @@ function toPitch(ocv::Int, val::Int, scaleDict::Dict{Int,Int}, ofs::Int)
 end
 
 
-const cLydDc = Dict( 1=>0, 2=>2, 3=>4, 4=>6, 5=>7, 6=>9, 7=>11 )
-const cMajDc = Dict( 1=>0, 2=>2, 3=>4, 4=>5, 5=>7, 6=>9, 7=>11 )
-const cMixDc = Dict( 1=>0, 2=>2, 3=>4, 4=>5, 5=>7, 6=>9, 7=>10 )
-const cDorDc = Dict( 1=>0, 2=>2, 3=>4, 4=>5, 5=>7, 6=>8, 7=>10 )
-const cMinDc = Dict( 1=>0, 2=>2, 3=>3, 4=>5, 5=>7, 6=>8, 7=>10 )
-const cPhrDc = Dict( 1=>0, 2=>1, 3=>3, 4=>5, 5=>7, 6=>8, 7=>10 )
-const cLocDc = Dict( 1=>0, 2=>1, 3=>3, 4=>5, 5=>6, 6=>8, 7=>10 )
+## returns the pitch value for a given scale and given (octave,interval) pair
+function getPitch(sca::ChromaticMode, ocv::Int, val::Int)
+	toPitch(ocv,val,sca.pmap,sca.basev)
+end
+
+function getPitch(sca::PercussionScale, ocv::Int, val::Int)
+	clamp(val,0,127)
+end
 
 
-noScale(ocv::Int,val::Int) = clamp(val,0,127)
+const cLydDc = Dict{Int,Int}( 1=>0, 2=>2, 3=>4, 4=>6, 5=>7, 6=>9, 7=>11 )
+const cMajDc = Dict{Int,Int}( 1=>0, 2=>2, 3=>4, 4=>5, 5=>7, 6=>9, 7=>11 )
+const cMixDc = Dict{Int,Int}( 1=>0, 2=>2, 3=>4, 4=>5, 5=>7, 6=>9, 7=>10 )
+const cDorDc = Dict{Int,Int}( 1=>0, 2=>2, 3=>4, 4=>5, 5=>7, 6=>8, 7=>10 )
+const cMinDc = Dict{Int,Int}( 1=>0, 2=>2, 3=>3, 4=>5, 5=>7, 6=>8, 7=>10 )
+const cPhrDc = Dict{Int,Int}( 1=>0, 2=>1, 3=>3, 4=>5, 5=>7, 6=>8, 7=>10 )
+const cLocDc = Dict{Int,Int}( 1=>0, 2=>1, 3=>3, 4=>5, 5=>6, 6=>8, 7=>10 )
 
-aLyd(ocv::Int,val::Int) = toPitch(ocv,val,cLydDc,-3)
-aMaj(ocv::Int,val::Int) = toPitch(ocv,val,cMajDc,-3)
-aMix(ocv::Int,val::Int) = toPitch(ocv,val,cMixDc,-3)
-aDor(ocv::Int,val::Int) = toPitch(ocv,val,cDorDc,-3)
-aMin(ocv::Int,val::Int) = toPitch(ocv,val,cMinDc,-3)
-aPhr(ocv::Int,val::Int) = toPitch(ocv,val,cPhrDc,-3)
-aLoc(ocv::Int,val::Int) = toPitch(ocv,val,cLocDc,-3)
 
-bLyd(ocv::Int,val::Int) = toPitch(ocv,val,cLydDc,-1)
-bMaj(ocv::Int,val::Int) = toPitch(ocv,val,cMajDc,-1)
-bMix(ocv::Int,val::Int) = toPitch(ocv,val,cMixDc,-1)
-bDor(ocv::Int,val::Int) = toPitch(ocv,val,cDorDc,-1)
-bMin(ocv::Int,val::Int) = toPitch(ocv,val,cMinDc,-1)
-bPhr(ocv::Int,val::Int) = toPitch(ocv,val,cPhrDc,-1)
-bLoc(ocv::Int,val::Int) = toPitch(ocv,val,cLocDc,-1)
+noScale = PercussionScale("perc")
 
-cLyd(ocv::Int,val::Int) = toPitch(ocv,val,cLydDc,0)
-cMaj(ocv::Int,val::Int) = toPitch(ocv,val,cMajDc,0)
-cMix(ocv::Int,val::Int) = toPitch(ocv,val,cMixDc,0)
-cDor(ocv::Int,val::Int) = toPitch(ocv,val,cDorDc,0)
-cMin(ocv::Int,val::Int) = toPitch(ocv,val,cMinDc,0)
-cPhr(ocv::Int,val::Int) = toPitch(ocv,val,cPhrDc,0)
-cLoc(ocv::Int,val::Int) = toPitch(ocv,val,cLocDc,0)
+aLyd = ChromaticMode(cLydDc,-3,"cLyd")
+aMaj = ChromaticMode(cMajDc,-3,"cMaj")
+aMix = ChromaticMode(cMixDc,-3,"cMix")
+aDor = ChromaticMode(cDorDc,-3,"aDor")
+aMin = ChromaticMode(cMinDc,-3,"aMin")
+aPhr = ChromaticMode(cPhrDc,-3,"aPhr")
+aLoc = ChromaticMode(cLocDc,-3,"aLoc")
 
-dLyd(ocv::Int,val::Int) = toPitch(ocv,val,cLydDc,2)
-dMaj(ocv::Int,val::Int) = toPitch(ocv,val,cMajDc,2)
-dMix(ocv::Int,val::Int) = toPitch(ocv,val,cMixDc,2)
-dDor(ocv::Int,val::Int) = toPitch(ocv,val,cDorDc,2)
-dMin(ocv::Int,val::Int) = toPitch(ocv,val,cMinDc,2)
-dPhr(ocv::Int,val::Int) = toPitch(ocv,val,cPhrDc,2)
-dLoc(ocv::Int,val::Int) = toPitch(ocv,val,cLocDc,2)
+bLyd = ChromaticMode(cLydDc,-1,"bLyd")
+bMaj = ChromaticMode(cMajDc,-1,"bMaj")
+bMix = ChromaticMode(cMixDc,-1,"bMix")
+bDor = ChromaticMode(cDorDc,-1,"bDor")
+bMin = ChromaticMode(cMinDc,-1,"bMin")
+bPhr = ChromaticMode(cPhrDc,-1,"bPhr")
+bLoc = ChromaticMode(cLocDc,-1,"bLoc")
 
-eLyd(ocv::Int,val::Int) = toPitch(ocv,val,cLydDc,4)
-eMaj(ocv::Int,val::Int) = toPitch(ocv,val,cMajDc,4)
-eMix(ocv::Int,val::Int) = toPitch(ocv,val,cMixDc,4)
-eDor(ocv::Int,val::Int) = toPitch(ocv,val,cDorDc,4)
-eMin(ocv::Int,val::Int) = toPitch(ocv,val,cMinDc,4)
-ePhr(ocv::Int,val::Int) = toPitch(ocv,val,cPhrDc,4)
-eLoc(ocv::Int,val::Int) = toPitch(ocv,val,cLocDc,4)
+cLyd = ChromaticMode(cLydDc,0,"cLyd")
+cMaj = ChromaticMode(cMajDc,0,"cMaj")
+cMix = ChromaticMode(cMixDc,0,"cMix")
+cDor = ChromaticMode(cDorDc,0,"cDor")
+cMin = ChromaticMode(cMinDc,0,"cMin")
+cPhr = ChromaticMode(cPhrDc,0,"cPhr")
+cLoc = ChromaticMode(cLocDc,0,"cLoc")
 
-fLyd(ocv::Int,val::Int) = toPitch(ocv,val,cLydDc,6)
-fMaj(ocv::Int,val::Int) = toPitch(ocv,val,cMajDc,6)
-fMix(ocv::Int,val::Int) = toPitch(ocv,val,cMixDc,6)
-fDor(ocv::Int,val::Int) = toPitch(ocv,val,cDorDc,6)
-fMin(ocv::Int,val::Int) = toPitch(ocv,val,cMinDc,6)
-fPhr(ocv::Int,val::Int) = toPitch(ocv,val,cPhrDc,6)
-fLoc(ocv::Int,val::Int) = toPitch(ocv,val,cLocDc,6)
+dLyd = ChromaticMode(cLydDc,2,"dLyd")
+dMaj = ChromaticMode(cMajDc,2,"dMaj")
+dMix = ChromaticMode(cMixDc,2,"dMix")
+dDor = ChromaticMode(cDorDc,2,"dDor")
+dMin = ChromaticMode(cMinDc,2,"dMin")
+dPhr = ChromaticMode(cPhrDc,2,"dPhr")
+dLoc = ChromaticMode(cLocDc,2,"dLoc")
 
-gLyd(ocv::Int,val::Int) = toPitch(ocv,val,cLydDc,7)
-gMaj(ocv::Int,val::Int) = toPitch(ocv,val,cMajDc,7)
-gMix(ocv::Int,val::Int) = toPitch(ocv,val,cMixDc,7)
-gDor(ocv::Int,val::Int) = toPitch(ocv,val,cDorDc,7)
-gMin(ocv::Int,val::Int) = toPitch(ocv,val,cMinDc,7)
-gPhr(ocv::Int,val::Int) = toPitch(ocv,val,cPhrDc,7)
-gLoc(ocv::Int,val::Int) = toPitch(ocv,val,cLocDc,7)
+eLyd = ChromaticMode(cLydDc,4,"eLyd")
+eMaj = ChromaticMode(cMajDc,4,"eMaj")
+eMix = ChromaticMode(cMixDc,4,"eMix")
+eDor = ChromaticMode(cDorDc,4,"eDor")
+eMin = ChromaticMode(cMinDc,4,"eMin")
+ePhr = ChromaticMode(cPhrDc,4,"ePhr")
+eLoc = ChromaticMode(cLocDc,4,"eLoc")
+
+fLyd = ChromaticMode(cLydDc,6,"fLyd")
+fMaj = ChromaticMode(cMajDc,6,"fMaj")
+fMix = ChromaticMode(cMixDc,6,"fMix")
+fDor = ChromaticMode(cDorDc,6,"fDor")
+fMin = ChromaticMode(cMinDc,6,"fMin")
+fPhr = ChromaticMode(cPhrDc,6,"fPhr")
+fLoc = ChromaticMode(cLocDc,6,"fLoc")
+
+gLyd = ChromaticMode(cLydDc,7,"gLyd")
+gMaj = ChromaticMode(cMajDc,7,"gMaj")
+gMix = ChromaticMode(cMixDc,7,"gMix")
+gDor = ChromaticMode(cDorDc,7,"gDor")
+gMin = ChromaticMode(cMinDc,7,"gMin")
+gPhr = ChromaticMode(cPhrDc,7,"gPhr")
+gLoc = ChromaticMode(cLocDc,7,"gLoc")
 
 
 

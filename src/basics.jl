@@ -154,7 +154,7 @@ end
 
 
 ## return copy of `x` with all note scales changed to `v`
-function sscale(v::Function, x::Exp)
+function sscale(v::Scales.Scale, x::Exp)
 	as = atomsOp(z->sscale(v,z),x)
 	Exp(x.dur,as)
 end
@@ -222,6 +222,13 @@ end
 
 
 function Base.isequal(x::Atom, y::Exp)
+	if x.dur != y.dur ; return false ; end
+	if length(y.as) != 1 ; return false ; end
+	isequal(x,t.as[1])
+end
+
+
+function Base.isequal(y::Exp, x::Atom)
 	if x.dur != y.dur ; return false ; end
 	if length(y.as) != 1 ; return false ; end
 	isequal(x,t.as[1])

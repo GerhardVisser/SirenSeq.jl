@@ -30,7 +30,7 @@ function Base.show(io::IO, a::Note)
 	print(io,s)
 	s = @sprintf "vel = %.2f,  " a.vel
 	print(io,s)
-	print(io,"sca = $(a.sca)")
+	print(io,"sca = $(a.sca.name)")
 end
 
 function Base.show(io::IO, a::BankSel)

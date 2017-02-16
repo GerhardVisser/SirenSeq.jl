@@ -55,7 +55,7 @@ Cha(v::Int, z) = channel(v,atomOrExp(z))
 
 Scale `z`; sets all note scales to `v`.  See SirenSeq.Scales
 """
-Sca(v::Function, z) = sscale(v,atomOrExp(z))
+Sca(v::Scales.Scale, z) = sscale(v,atomOrExp(z))
 
 
 ## used by constructor N
@@ -68,7 +68,7 @@ defaultOctave = 3
 
 Sets the default scale for `N` constructor (defualt value is cMaj).
 """
-setDefaultScale(sca::Function) = ( global defaultScale = sca ; )
+setDefaultScale(sca::Scales.Scale) = ( global defaultScale = sca ; )
 
 
 """

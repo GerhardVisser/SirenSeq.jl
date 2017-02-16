@@ -63,7 +63,7 @@ end
 
 
 ## return copy of `a` with note scale changed to `v`
-function sscale(v::Function, a::Atom)
+function sscale(v::Scales.Scale, a::Atom)
 	if in(:sca,fieldnames(typeof(a)))
 		a = deepcopy(a)
 		a.sca = v
@@ -94,7 +94,7 @@ type Note <: Duratom
 	itv::Int			# interval value
 	ocv::Int			# octave
 	vel::Float64		# velocity
-	sca::Function		# scale
+	sca::Scales.Scale	# scale
 
 	Note(ofs,dur,cha,itv,ocv,vel,sca) = atomTest(new(ofs,dur,cha,itv,ocv,vel,sca))
 end
@@ -216,7 +216,7 @@ end
 
 function toTrack!(mt::MidiTrack, a::Note)
 	t1 = timm(mt,a.ofs) ; t2 = t1 + tim(mt,a.dur) ; @assert t1 < t2-1
-	ve = ftoi7(a.vel) ; pch::Int = a.sca(a.ocv,a.itv) ; @assert 0 <= pch < 128
+	ve = ftoi7(a.vel) ; pch::Int = Scales.getPitch(a.sca,a.ocv,a.itv) ; @assert 0 <= pch < 128
 	noteOn!(mt,a.ofs,a.cha,pch,ve)
 	noteOff!(mt,a.ofs+a.dur,a.cha,pch,ve)
 	t2
