@@ -53,7 +53,7 @@ include("display.jl")
 include("exportmidi.jl")
 include("playmidi.jl")
 include("midirender.jl")
-include("csoundgen.jl")
+include("csound.jl")
 
 
 

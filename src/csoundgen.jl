@@ -1,16 +1,4 @@
 
-"""
-Submodule of `SirenSeq`.
-Used for playing `SirenSeq` expressions using `csound` or writing them to audio files.
-Must have `csound` installed.
-"""
-module Csound
-
-
-export
-
-CsHead, SoundFont, FluidInst,
-generateOrc
 
 
 using SirenSeq
@@ -20,7 +8,7 @@ using SirenSeq
 Options for a `csound` orchestra file `.orc` file to be generated.
 """
 type CsHead
-	str::AbstractString  # csound options string
+	dacStr::AbstractString  # csound options string
 	sr::Int  # sample rate
 	ksmps::Int  # samples per control cycle
 end
@@ -41,6 +29,9 @@ function Base.isequal(x::SoundFont, y::SoundFont)
 end
 
 
+"""
+Abstract type for all `csound` instruments
+"""
 abstract CsInstr
 
 
@@ -62,22 +53,25 @@ FluidInst(name::AbstractString, sf::SoundFont, bank::Int, prog::Int) = FluidInst
 FluidInst(name::AbstractString, sf::SoundFont, inst::Tuple{Int,Int}) = FluidInst(name,sf,inst[1],inst[2],false)
 
 
+## name of oinstrument as will appear in the csound files
+function instrName(n::FluidInst)
+	"fluidI_$(n.name)"
+end
+
+
 """
+	makeOrc(head::CsHead, ns; path::AbstractString=\"temp\")
+
 Generates a `csound` orchestra file at `path.orc`.
-Do not include the `.orc` in your path
-`ns` is a list of instruments (`<:CsInstr`)
+
+`head` defines some options of to-be-generated file \\
+`ns` is a list of instruments (`<:CsInstr`) \\
+`path` is the file name (do not append \".orc\", that is done automatically)
 """
-function generateOrc(head::CsHead, ns; path::AbstractString="temp")
+function makeOrc(head::CsHead, ns; path::AbstractString="temp")
 	file = open("$(path).orc","w")
 	s = 
 """
-<CsoundSynthesizer>
-
-<CsOptions>
-$(head.str)
-</CsOptions>
-
-<CsInstruments>
 
 sr = $(head.sr)
 ksmps = $(head.ksmps)
@@ -110,14 +104,8 @@ nchnls = 2
 		s = generateInstrOrg(n,sfd)
 		write(file,s)
 	end
-s = 
-"""
-</CsInstruments>
-
-</CsoundSynthesizer>
-"""
-	write(file,s)
 	close(file)
+	println("orchestra file written to:\n  $(path).orc")
 end
 
 
@@ -135,14 +123,15 @@ end
 
 ## Generates the `csound` orchestra file part for a single instrument
 function generateInstrOrg(n::FluidInst, sfd::Dict{SoundFont,Int})
+	nn = instrName(n)
 	s = 
 """
-giPre_$(n.name)	sfpreset	14, 0, giSf$(sfd[n.soundfont]), 0 
+giPre_$(n.name)  sfpreset  $(n.prog), $(n.bank), giSf$(sfd[n.soundfont]), 0
 
-	instr fluidI_$(n.name)
+	instr $(nn)
 
-ivel = p6
-ifrq = p5
+ivel = p5
+ifrq = p4
 ikey = int(69 + 12*log2(ifrq/440))
 iamp = 0dbfs/16384
 iamp = iamp*ivel/127
@@ -157,6 +146,3 @@ end
 
 
 
-
-
-end
